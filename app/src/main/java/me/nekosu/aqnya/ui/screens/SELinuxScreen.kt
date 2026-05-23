@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -34,6 +35,7 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import me.nekosu.aqnya.ui.theme.NekosuTheme
+import me.nekosu.aqnya.R
 
 private val Context.selinuxDataStore: DataStore<Preferences> by preferencesDataStore("selinux_rules")
 private val KEY_GROUPS = stringPreferencesKey("groups")
@@ -121,6 +123,7 @@ private fun SelinuxRulesContent(
 ) {
     val snackState = remember { SnackbarHostState() }
     var snackMsg by remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
 
     LaunchedEffect(snackMsg) {
         snackMsg?.let {
@@ -157,11 +160,11 @@ private fun SelinuxRulesContent(
                                     if (onAddRule(r) == 0) ok++ else fail++
                                 }
                             }
-                            snackMsg = "Applied $ok rule(s)" + if (fail > 0) ", $fail failed" else ""
+                                snackMsg = context.getString(R.string.selinux_applied_count, ok) + if (fail > 0) " " + context.getString(R.string.selinux_applied_failed, fail) else ""
                         },
                         containerColor = MaterialTheme.colorScheme.secondaryContainer,
                     ) {
-                        Icon(Icons.Default.PlayArrow, contentDescription = "Apply all")
+                        Icon(Icons.Default.PlayArrow, contentDescription = stringResource(R.string.selinux_apply_all))
                     }
                 }
                 ExtendedFloatingActionButton(
@@ -170,7 +173,7 @@ private fun SelinuxRulesContent(
                         showGroupDialog = true
                     },
                     icon = { Icon(Icons.Default.CreateNewFolder, contentDescription = null) },
-                    text = { Text("New Group") },
+                    text = { Text(stringResource(R.string.selinux_new_group)) },
                 )
             }
         },
@@ -180,14 +183,14 @@ private fun SelinuxRulesContent(
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "返回",
+                            contentDescription = stringResource(R.string.cd_back),
                         )
                     }
                 },
                 title = {
                     Column {
                         Text(
-                            "SELinux Rules",
+                            stringResource(R.string.settings_selinux_rules),
                             style =
                                 MaterialTheme.typography.titleLarge.copy(
                                     fontWeight = FontWeight.Bold,
@@ -195,7 +198,7 @@ private fun SelinuxRulesContent(
                                 ),
                         )
                         Text(
-                            "${groups.size} group(s) · $totalRules rule(s)",
+                            stringResource(R.string.selinux_group_count, groups.size, totalRules),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -204,7 +207,7 @@ private fun SelinuxRulesContent(
                 actions = {
                     if (groups.isNotEmpty()) {
                         IconButton(onClick = { onPersist(emptyList()) }) {
-                            Icon(Icons.Default.DeleteSweep, contentDescription = "Clear all")
+                            Icon(Icons.Default.DeleteSweep, contentDescription = stringResource(R.string.selinux_clear_all))
                         }
                     }
                 },
@@ -243,8 +246,8 @@ private fun SelinuxRulesContent(
                             group.rules.forEach { r ->
                                 if (onAddRule(r) == 0) ok++ else fail++
                             }
-                            snackMsg = "[${group.name}] Applied $ok" +
-                                if (fail > 0) ", $fail failed" else ""
+                            snackMsg = context.getString(R.string.selinux_group_applied, group.name, ok) +
+                                if (fail > 0) " " + context.getString(R.string.selinux_applied_failed, fail) else ""
                         },
                         onAddRule = {
                             ruleGroupId = group.id
@@ -269,7 +272,7 @@ private fun SelinuxRulesContent(
                         },
                         onApplyRule = { rule ->
                             val ret = onAddRule(rule)
-                            snackMsg = if (ret == 0) "Rule applied" else "Failed (ret=$ret)"
+                            snackMsg = if (ret == 0) context.getString(R.string.selinux_rule_applied) else context.getString(R.string.selinux_rule_failed, ret)
                         },
                     )
                 }
@@ -381,7 +384,7 @@ private fun GroupCard(
                         color = requiredColor.copy(alpha = 0.12f),
                     ) {
                         Text(
-                            if (group.required) "required" else "optional",
+                            if (group.required) stringResource(R.string.selinux_label_required) else stringResource(R.string.selinux_optional),
                             modifier = Modifier.padding(horizontal = 6.dp, vertical = 1.dp),
                             style =
                                 MaterialTheme.typography.labelSmall.copy(
@@ -391,7 +394,7 @@ private fun GroupCard(
                         )
                     }
                     Text(
-                        "${group.rules.size} rule(s)",
+                        stringResource(R.string.selinux_rule_count, group.rules.size),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -400,7 +403,7 @@ private fun GroupCard(
             IconButton(onClick = onApplyGroup, modifier = Modifier.size(32.dp)) {
                 Icon(
                     Icons.Default.PlayArrow,
-                    contentDescription = "Apply group",
+                    contentDescription = stringResource(R.string.cd_apply_group),
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(18.dp),
                 )
@@ -408,21 +411,21 @@ private fun GroupCard(
             IconButton(onClick = onAddRule, modifier = Modifier.size(32.dp)) {
                 Icon(
                     Icons.Default.Add,
-                    contentDescription = "Add rule",
+                    contentDescription = stringResource(R.string.selinux_add_rule),
                     modifier = Modifier.size(18.dp),
                 )
             }
             IconButton(onClick = onEditGroup, modifier = Modifier.size(32.dp)) {
                 Icon(
                     Icons.Default.Edit,
-                    contentDescription = "Edit group",
+                    contentDescription = stringResource(R.string.cd_edit_group),
                     modifier = Modifier.size(18.dp),
                 )
             }
             IconButton(onClick = onDeleteGroup, modifier = Modifier.size(32.dp)) {
                 Icon(
                     Icons.Default.Delete,
-                    contentDescription = "Delete group",
+                    contentDescription = stringResource(R.string.cd_delete_group),
                     tint = MaterialTheme.colorScheme.error,
                     modifier = Modifier.size(18.dp),
                 )
@@ -440,7 +443,7 @@ private fun GroupCard(
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
-                        "No rules — tap + to add",
+                        stringResource(R.string.selinux_no_rules_hint),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.outline,
                     )
@@ -481,10 +484,10 @@ private fun RuleCard(
         }
     val effectLabel =
         when (rule.effect) {
-            AvTab.ALLOWED -> if (rule.invert) "DENY" else "ALLOW"
-            AvTab.AUDITDENY -> "AUDITDENY"
-            AvTab.AUDITALLOW -> "AUDITALLOW"
-            AvTab.TRANSITION -> "TRANSITION"
+            AvTab.ALLOWED -> if (rule.invert) stringResource(R.string.selinux_label_deny) else stringResource(R.string.selinux_label_allow)
+            AvTab.AUDITDENY -> stringResource(R.string.selinux_label_auditdeny)
+            AvTab.AUDITALLOW -> stringResource(R.string.selinux_label_auditallow)
+            AvTab.TRANSITION -> stringResource(R.string.selinux_label_transition)
             else -> "effect=${rule.effect}"
         }
 
@@ -511,7 +514,7 @@ private fun RuleCard(
                 IconButton(onClick = onApply, modifier = Modifier.size(28.dp)) {
                     Icon(
                         Icons.Default.PlayArrow,
-                        contentDescription = "Apply",
+                        contentDescription = stringResource(R.string.cd_apply),
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(16.dp),
                     )
@@ -519,14 +522,14 @@ private fun RuleCard(
                 IconButton(onClick = onEdit, modifier = Modifier.size(28.dp)) {
                     Icon(
                         Icons.Default.Edit,
-                        contentDescription = "Edit",
+                        contentDescription = stringResource(R.string.cd_edit),
                         modifier = Modifier.size(16.dp),
                     )
                 }
                 IconButton(onClick = onDelete, modifier = Modifier.size(28.dp)) {
                     Icon(
                         Icons.Default.Delete,
-                        contentDescription = "Delete",
+                        contentDescription = stringResource(R.string.cd_delete),
                         tint = MaterialTheme.colorScheme.error,
                         modifier = Modifier.size(16.dp),
                     )
@@ -581,12 +584,12 @@ private fun EmptyState(modifier: Modifier = Modifier) {
                 tint = MaterialTheme.colorScheme.outlineVariant,
             )
             Text(
-                "No groups",
+                stringResource(R.string.selinux_no_groups),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(
-                "Tap \"New Group\" to get started",
+                stringResource(R.string.selinux_no_groups_hint),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.outline,
             )
@@ -610,7 +613,7 @@ private fun GroupEditorDialog(
                 verticalArrangement = Arrangement.spacedBy(14.dp),
             ) {
                 Text(
-                    if (initial == null) "New Group" else "Edit Group",
+                    if (initial == null) stringResource(R.string.selinux_new_group) else stringResource(R.string.selinux_edit_group),
                     style =
                         MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Bold,
@@ -620,7 +623,7 @@ private fun GroupEditorDialog(
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Group name") },
+                    label = { Text(stringResource(R.string.selinux_group_name)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     textStyle =
@@ -638,9 +641,9 @@ private fun GroupEditorDialog(
                             .padding(horizontal = 4.dp, vertical = 8.dp),
                 ) {
                     Column(Modifier.weight(1f)) {
-                        Text("Required", style = MaterialTheme.typography.bodyMedium)
+                        Text(stringResource(R.string.selinux_required), style = MaterialTheme.typography.bodyMedium)
                         Text(
-                            "加载失败时中止",
+                            stringResource(R.string.selinux_required_desc),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -651,11 +654,11 @@ private fun GroupEditorDialog(
                     Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
                 ) {
-                    TextButton(onClick = onDismiss) { Text("Cancel") }
+                    TextButton(onClick = onDismiss) { Text(stringResource(R.string.dialog_cancel)) }
                     Button(
                         onClick = { if (name.isNotBlank()) onConfirm(name.trim(), required) },
                         enabled = name.isNotBlank(),
-                    ) { Text("Save") }
+                    ) { Text(stringResource(R.string.dialog_save)) }
                 }
             }
         }
@@ -679,10 +682,10 @@ private fun RuleEditorDialog(
 
     val effectOptions =
         listOf(
-            AvTab.ALLOWED to "ALLOW",
-            AvTab.AUDITALLOW to "AUDITALLOW",
-            AvTab.AUDITDENY to "AUDITDENY",
-            AvTab.TRANSITION to "TRANSITION",
+            AvTab.ALLOWED to stringResource(R.string.selinux_label_allow),
+            AvTab.AUDITALLOW to stringResource(R.string.selinux_label_auditallow),
+            AvTab.AUDITDENY to stringResource(R.string.selinux_label_auditdeny),
+            AvTab.TRANSITION to stringResource(R.string.selinux_label_transition),
         )
     val mono = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace)
 
@@ -696,7 +699,7 @@ private fun RuleEditorDialog(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 Text(
-                    if (initial == null) "Add Rule" else "Edit Rule",
+                    if (initial == null) stringResource(R.string.selinux_add_rule) else stringResource(R.string.selinux_edit_rule),
                     style =
                         MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Bold,
@@ -705,20 +708,20 @@ private fun RuleEditorDialog(
                 )
 
                 val fm = Modifier.fillMaxWidth()
-                RuleTextField(fm, "src (empty = *)", src, mono) { src = it }
-                RuleTextField(fm, "tgt (empty = *)", tgt, mono) { tgt = it }
-                RuleTextField(fm, "cls (empty = *)", cls, mono) { cls = it }
-                RuleTextField(fm, "perm (empty = *)", perm, mono) { perm = it }
+                RuleTextField(fm, stringResource(R.string.selinux_empty_value).let { "src (empty = $it)" }, src, mono) { src = it }
+                RuleTextField(fm, stringResource(R.string.selinux_empty_value).let { "tgt (empty = $it)" }, tgt, mono) { tgt = it }
+                RuleTextField(fm, stringResource(R.string.selinux_empty_value).let { "cls (empty = $it)" }, cls, mono) { cls = it }
+                RuleTextField(fm, stringResource(R.string.selinux_empty_value).let { "perm (empty = $it)" }, perm, mono) { perm = it }
 
                 ExposedDropdownMenuBox(
                     expanded = effectExpanded,
                     onExpandedChange = { effectExpanded = it },
                 ) {
                     OutlinedTextField(
-                        value = effectOptions.find { it.first == effect }?.second ?: "ALLOW",
+                        value = effectOptions.find { it.first == effect }?.second ?: stringResource(R.string.selinux_label_allow),
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("Effect") },
+                        label = { Text(stringResource(R.string.selinux_effect)) },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(effectExpanded) },
                         modifier = fm.menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled = true),
                         textStyle = mono,
@@ -749,9 +752,9 @@ private fun RuleEditorDialog(
                             .padding(horizontal = 4.dp, vertical = 8.dp),
                 ) {
                     Column(Modifier.weight(1f)) {
-                        Text("Invert", style = MaterialTheme.typography.bodyMedium)
+                        Text(stringResource(R.string.selinux_invert), style = MaterialTheme.typography.bodyMedium)
                         Text(
-                            "ALLOW → DENY",
+                            stringResource(R.string.selinux_invert_desc),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -763,7 +766,7 @@ private fun RuleEditorDialog(
                     Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
                 ) {
-                    TextButton(onClick = onDismiss) { Text("Cancel") }
+                    TextButton(onClick = onDismiss) { Text(stringResource(R.string.dialog_cancel)) }
                     Button(onClick = {
                         onConfirm(
                             SelinuxRule(
@@ -775,7 +778,7 @@ private fun RuleEditorDialog(
                                 invert = invert,
                             ),
                         )
-                    }) { Text("Save") }
+                    }) { Text(stringResource(R.string.dialog_save)) }
                 }
             }
         }

@@ -15,12 +15,7 @@ import androidx.core.net.toUri
 import me.nekosu.aqnya.BuildConfig
 import me.nekosu.aqnya.util.UpdateChecker
 
-/**
- * 负责检查应用更新并显示更新对话框。
- *
- * @param owner GitHub 仓库所有者。
- * @param repo GitHub 仓库名称。
- */
+
 @Composable
 fun CheckUpdate(
     owner: String,
@@ -30,12 +25,8 @@ fun CheckUpdate(
     var showUpdateDialog by remember { mutableStateOf(false) }
     var latestTag by remember { mutableStateOf<String?>(null) }
 
-    // --- 版本比较逻辑 ---
-
-    /** 从版本字符串中去除前缀和连字符后的内容，仅保留数字部分。 */
     fun stripSuffix(version: String): String = version.trimStart('v', 'V').substringBefore('-')
 
-    /** 将版本字符串解析为三位整数列表 (Major, Minor, Patch)。 */
     fun parseNumbers(version: String): List<Int> =
         stripSuffix(version)
             .split('.')
@@ -49,7 +40,6 @@ fun CheckUpdate(
                 }
             }
 
-    /** 比较远程版本是否大于本地版本。 */
     fun isRemoteGreater(
         local: String,
         remote: String,
@@ -63,8 +53,6 @@ fun CheckUpdate(
         return false
     }
 
-    // --- 更新检查副作用 ---
-
     LaunchedEffect(Unit) {
         UpdateChecker.fetchLatestVersion(owner, repo)?.let { remoteVer ->
             latestTag = remoteVer
@@ -73,8 +61,6 @@ fun CheckUpdate(
             }
         }
     }
-
-    // --- 更新对话框 UI ---
 
     if (showUpdateDialog && latestTag != null) {
         AlertDialog(

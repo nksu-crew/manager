@@ -6,6 +6,7 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.FlutterEngineCache
 import io.flutter.embedding.engine.dart.DartExecutor
 import me.nekosu.aqnya.util.CrashHandler
+import me.nekosu.aqnya.util.LocaleHelper
 
 class NkApplication : Application() {
     val flutterEngine by lazy {
@@ -17,12 +18,9 @@ class NkApplication : Application() {
         }
     }
 
-/*
     override fun attachBaseContext(base: Context) {
-        System.loadLibrary("ncore2")
-        super.attachBaseContext(base)
+        super.attachBaseContext(LocaleHelper.wrap(base, LocaleHelper.savedLanguageTag(base)))
     }
-*/
     override fun onCreate() {
         super.onCreate()
         CrashHandler.init(this)

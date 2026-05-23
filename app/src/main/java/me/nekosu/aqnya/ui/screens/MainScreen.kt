@@ -38,6 +38,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -117,16 +118,7 @@ fun FloatingBottomNavigationBar(
                 items.forEach { item ->
                     val selected = currentRoute == item.route
 
-                    val containerColor by animateColorAsState(
-                        targetValue =
-                            if (selected) {
-                                MaterialTheme.colorScheme.primaryContainer
-                            } else {
-                                Color.Transparent
-                            },
-                        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
-                        label = "navItemBg",
-                    )
+                    val containerColor = if (selected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
 
                     val itemWidth by animateDpAsState(
                         targetValue = if (selected) 88.dp else 48.dp,
@@ -146,10 +138,9 @@ fun FloatingBottomNavigationBar(
                         },
                         shape = RoundedCornerShape(50),
                         color = containerColor,
-                        modifier =
-                            Modifier
-                                .height(48.dp)
-                                .width(itemWidth),
+                        modifier = Modifier
+                            .height(48.dp)
+                            .width(itemWidth),
                     ) {
                         Box(
                             contentAlignment = Alignment.Center,
@@ -162,7 +153,7 @@ fun FloatingBottomNavigationBar(
                             ) {
                                 Icon(
                                     imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
-                                    contentDescription = item.title,
+                                    contentDescription = stringResource(item.titleRes),
                                     tint =
                                         if (selected) {
                                             MaterialTheme.colorScheme.onPrimaryContainer
@@ -177,7 +168,7 @@ fun FloatingBottomNavigationBar(
                                     exit = fadeOut(tween(150)),
                                 ) {
                                     Text(
-                                        text = item.title,
+                                        text = stringResource(item.titleRes),
                                         style = MaterialTheme.typography.labelMedium,
                                         color = MaterialTheme.colorScheme.onPrimaryContainer,
                                         maxLines = 1,
@@ -201,7 +192,9 @@ fun NormalBottomNavigationBar(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    NavigationBar {
+    NavigationBar(
+        containerColor = MaterialTheme.colorScheme.surface,
+    ) {
         items.forEach { item ->
             val selected = currentRoute == item.route
             NavigationBarItem(
@@ -215,13 +208,20 @@ fun NormalBottomNavigationBar(
                         }
                     }
                 },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    selectedTextColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                ),
                 icon = {
                     Icon(
                         imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
-                        contentDescription = item.title,
+                        contentDescription = stringResource(item.titleRes),
                     )
                 },
-                label = { Text(item.title) },
+                label = { Text(stringResource(item.titleRes)) },
             )
         }
     }

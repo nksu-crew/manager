@@ -19,6 +19,10 @@ object DebugPreferences {
 
     fun navBarStyleFlow(context: Context): Flow<Int> = context.prefsFlow { getInt("${PREFIX}nav_bar_style", 1) }
 
+    fun themeColorFlow(context: Context): Flow<Int> = context.prefsFlow { getInt("${PREFIX}theme_color", 0) }
+
+    fun amoledFlow(context: Context): Flow<Boolean> = context.prefsFlow { getBoolean("${PREFIX}amoled_mode", false) }
+
     fun setShowRules(
         context: Context,
         value: Boolean,
@@ -38,6 +42,20 @@ object DebugPreferences {
         value: Int,
     ) {
         getPrefs(context).edit().putInt("${PREFIX}nav_bar_style", value).apply()
+    }
+
+    fun setThemeColor(
+        context: Context,
+        value: Int,
+    ) {
+        getPrefs(context).edit().putInt("${PREFIX}theme_color", value).apply()
+    }
+
+    fun setAmoled(
+        context: Context,
+        value: Boolean,
+    ) {
+        getPrefs(context).edit().putBoolean("${PREFIX}amoled_mode", value).apply()
     }
 
     private fun <T> Context.prefsFlow(getValue: SharedPreferences.() -> T): Flow<T> =

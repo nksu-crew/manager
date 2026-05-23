@@ -5,11 +5,12 @@ import android.content.pm.PackageManager
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,17 +18,18 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.DividerDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -39,6 +41,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -46,6 +49,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -54,6 +58,9 @@ import androidx.core.net.toUri
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import me.nekosu.aqnya.R
+import me.nekosu.aqnya.ui.component.CardGroup
+import me.nekosu.aqnya.ui.component.CardItem
+import me.nekosu.aqnya.ui.component.ListRow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -61,162 +68,102 @@ fun AboutScreen(navController: NavHostController) {
     val scrollBehavior = pinnedScrollBehavior(rememberTopAppBarState())
     val context = LocalContext.current
     val isInPreview = LocalInspectionMode.current
-    val versionName =
-        remember(context, isInPreview) {
-            if (isInPreview) {
-                "预览版"
-            } else {
-                try {
-                    context.packageManager
-                        .getPackageInfo(context.packageName, 0)
-                        .versionName
-                        ?: "未知版本"
-                } catch (_: PackageManager.NameNotFoundException) {
-                    "未知版本"
-                }
-            }
+    val versionName = remember(context, isInPreview) {
+        if (isInPreview) context.getString(R.string.about_preview_version)
+        else try {
+            context.packageManager.getPackageInfo(context.packageName, 0).versionName
+                ?: context.getString(R.string.about_unknown_version)
+        } catch (_: PackageManager.NameNotFoundException) {
+            context.getString(R.string.about_unknown_version)
         }
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("关于") },
+                title = {
+                    Text(
+                        text = stringResource(R.string.about),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Black,
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "返回",
-                        )
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.cd_back))
                     }
                 },
                 scrollBehavior = scrollBehavior,
             )
         },
-        contentWindowInsets =
-            WindowInsets.safeDrawing
-                .only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        contentWindowInsets = WindowInsets.safeDrawing
+            .only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
     ) { innerPadding ->
-        LazyColumn(
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .nestedScroll(scrollBehavior.nestedScrollConnection),
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp)
+                .padding(top = 16.dp, bottom = 96.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top,
         ) {
-            item {
-                Spacer(Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(8.dp))
+            val icon = remember {
+                val drawable = ContextCompat.getDrawable(context, R.mipmap.ic_launcher)!!
+                BitmapPainter(drawable.toBitmap().asImageBitmap())
             }
+            Image(
+                painter = icon,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(88.dp)
+                    .clip(RoundedCornerShape(20.dp)),
+            )
 
-            item {
-                val context = LocalContext.current
-                val icon =
-                    remember {
-                        val drawable = ContextCompat.getDrawable(context, R.mipmap.ic_launcher)!!
-                        BitmapPainter(drawable.toBitmap().asImageBitmap())
-                    }
-                Image(
-                    painter = icon,
-                    contentDescription = null,
-                    modifier =
-                        Modifier
-                            .size(85.dp)
-                            .clip(RoundedCornerShape(16.dp)),
-                )
-            }
-            item {
-                Spacer(Modifier.height(16.dp))
-            }
+            Spacer(modifier = Modifier.height(8.dp))
 
-            item {
-                Text(
-                    text = stringResource(R.string.app_name),
-                    style = MaterialTheme.typography.titleLarge,
-                )
-            }
-            item {
-                Spacer(Modifier.height(8.dp))
-            }
+            Text(
+                text = stringResource(R.string.app_name),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Black,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
 
-            item {
-                Text(
-                    text = "版本: $versionName",
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
+            Text(
+                text = "${stringResource(R.string.about_version)}: $versionName",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
 
-            item {
-                HorizontalDivider(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 32.dp, vertical = 24.dp),
-                    thickness = DividerDefaults.Thickness,
-                    color = DividerDefaults.color,
-                )
-            }
+            Spacer(modifier = Modifier.height(12.dp))
 
-            item {
-                val context = LocalContext.current
-                Row(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                val intent =
-                                    Intent(
-                                        Intent.ACTION_VIEW,
-                                        "https://github.com/aqnya/nekosu".toUri(),
-                                    )
-                                context.startActivity(intent)
-                            }.padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.code_24px),
-                        contentDescription = null,
-                        modifier = Modifier.size(24.dp),
+            CardGroup {
+                CardItem(index = 0, total = 2) {
+                    ListRow(
+                        modifier = Modifier.clickable {
+                            val intent = Intent(Intent.ACTION_VIEW, "https://github.com/aqnya/nekosu".toUri())
+                            context.startActivity(intent)
+                        },
+                        icon = { Icon(painter = painterResource(id = R.drawable.code_24px), contentDescription = null) },
+                        headline = { Text(stringResource(R.string.about_repository), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold) },
+                        supporting = { Text(stringResource(R.string.about_repository_summary)) },
                     )
-
-                    Spacer(modifier = Modifier.width(16.dp))
-
-                    Column {
-                        Text(
-                            text = "仓库",
-                            style = MaterialTheme.typography.titleMedium,
-                        )
-                        Text(
-                            text = "在GitHub仓库查看源码",
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
-                    }
                 }
-            }
-            item {
-                Column {
-                    Row(
-                        modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    navController.navigate("open_source")
-                                }.padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.source_code_24px),
-                            contentDescription = null,
-                            modifier = Modifier.size(24.dp),
-                        )
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Column {
-                            Text(
-                                text = "开放源代码",
-                                style = MaterialTheme.typography.titleMedium,
-                            )
-                        }
-                    }
+
+                CardItem(index = 1, total = 2) {
+                    ListItem(
+                        modifier = Modifier.fillMaxWidth().clickable { navController.navigate("open_source") },
+                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                        leadingContent = {
+                            Icon(painter = painterResource(id = R.drawable.source_code_24px), contentDescription = null)
+                        },
+                        headlineContent = {
+                            Text(stringResource(R.string.about_open_source), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                        },
+                    )
                 }
             }
         }
@@ -226,7 +173,5 @@ fun AboutScreen(navController: NavHostController) {
 @Preview(showBackground = true)
 @Composable
 fun AboutScreenPreview() {
-    AboutScreen(
-        navController = rememberNavController(),
-    )
+    AboutScreen(navController = rememberNavController())
 }

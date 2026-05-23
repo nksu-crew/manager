@@ -7,8 +7,10 @@ import io.flutter.plugin.common.MethodChannel
 fun ColorScheme.toNavBarColorMap(): Map<String, Int> =
     mapOf(
         "surfaceContainer" to surfaceContainer.toArgb(),
-        "secondaryContainer" to secondaryContainer.toArgb(),
-        "onSecondaryContainer" to onSecondaryContainer.toArgb(),
+        "primaryContainer" to primaryContainer.toArgb(),
+        "onPrimaryContainer" to onPrimaryContainer.toArgb(),
+        "secondaryContainer" to primaryContainer.toArgb(),         // Flutter 用它做指示器，重定向到 primaryContainer
+        "onSecondaryContainer" to onPrimaryContainer.toArgb(),
         "onSurfaceVariant" to onSurfaceVariant.toArgb(),
         "surfaceTint" to surfaceTint.toArgb(),
     )

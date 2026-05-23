@@ -25,7 +25,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Memory
 import androidx.compose.material.icons.filled.Numbers
 import androidx.compose.material.icons.filled.PhoneAndroid
-import androidx.compose.material.icons.filled.Rule
+import androidx.compose.material.icons.automirrored.filled.Rule
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SystemUpdate
 import androidx.compose.material3.Card
@@ -39,6 +39,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -87,25 +88,23 @@ fun HomeScreenContent(
                     Text(
                         text = stringResource(R.string.app_name),
                         style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
+                        fontWeight = FontWeight.Black,
                     )
                 },
-                colors =
-                    TopAppBarDefaults.centerAlignedTopAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        titleContentColor = MaterialTheme.colorScheme.onSurface,
-                    ),
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                ),
             )
         },
     ) { innerPadding ->
         Column(
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 16.dp, vertical = 12.dp)
-                    .padding(bottom = 88.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .padding(bottom = 88.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             StatusCard(
@@ -129,7 +128,7 @@ fun HomeScreenContent(
                         label = stringResource(R.string.fmac_rules),
                         value = ruleCount.toString(),
                         modifier = Modifier.weight(1f),
-                        bgIcon = Icons.Filled.Rule,
+                        bgIcon = Icons.AutoMirrored.Filled.Rule,
                         onClick = onNavigateToRules,
                     )
                 }
@@ -155,6 +154,8 @@ fun HomeScreen(
     val suCount by viewModel.suCount.collectAsState()
     val ruleCount by viewModel.ruleCount.collectAsState()
 
+    LaunchedEffect(Unit) { viewModel.refresh() }
+
     HomeScreenContent(
         installStatus = installStatus,
         suCount = suCount,
@@ -164,6 +165,7 @@ fun HomeScreen(
         onNavigateToRules = onNavigateToRules,
         onInstallClick = {
             if (installStatus != InstallStatus.INSTALLED) {
+                Toast.makeText(context, "即将上线... From Aqnya", Toast.LENGTH_SHORT).show()
                 showInstallSheet = true
                 ncore.ctl(1)
             } else {
@@ -173,9 +175,7 @@ fun HomeScreen(
     )
 
     if (showInstallSheet) {
-        me.nekosu.aqnya
-            .ncore
-            .helloLog()
+        ncore.helloLog()
     }
 }
 
@@ -342,7 +342,7 @@ fun StatCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         colors =
             CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.65f),
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
             ),
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
@@ -350,12 +350,11 @@ fun StatCard(
                 Icon(
                     imageVector = bgIcon,
                     contentDescription = null,
-                    modifier =
-                        Modifier
-                            .align(Alignment.BottomEnd)
-                            .size(58.dp)
-                            .padding(end = 18.dp, bottom = 12.dp),
-                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.16f),
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .size(58.dp)
+                        .padding(end = 18.dp, bottom = 12.dp),
+                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f),
                 )
             }
             Column(
@@ -417,7 +416,7 @@ fun DeviceInfoCard(modifier: Modifier = Modifier) {
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
             colors =
                 CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.6f),
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
                 ),
         ) {
             Column(modifier = Modifier.padding(vertical = 8.dp)) {

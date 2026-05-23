@@ -53,6 +53,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -66,6 +67,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.nekosu.aqnya.ncore
+import me.nekosu.aqnya.R
 import me.nekosu.aqnya.util.FMAC_BIT_DENY
 import me.nekosu.aqnya.util.FmacRule
 import me.nekosu.aqnya.util.RuleDbHelper
@@ -156,13 +158,13 @@ fun RulesScreen(extraBottomPadding: Dp = 96.dp) {
                 title = {
                     Column {
                         Text(
-                            "FMAC 规则",
+                            stringResource(R.string.fmac_rules),
                             style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
+                            fontWeight = FontWeight.Black,
                         )
                         if (vm.isLoaded) {
                             Text(
-                                "${vm.rules.size} 条规则",
+                                stringResource(R.string.fmac_rule_count, vm.rules.size),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -173,7 +175,7 @@ fun RulesScreen(extraBottomPadding: Dp = 96.dp) {
                     IconButton(onClick = { showAddDialog = true }) {
                         Icon(
                             Icons.Default.Add,
-                            contentDescription = "添加规则",
+                            contentDescription = stringResource(R.string.fmac_add_rule),
                             tint = MaterialTheme.colorScheme.primary,
                         )
                     }
@@ -203,7 +205,7 @@ fun RulesScreen(extraBottomPadding: Dp = 96.dp) {
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        Text("暂无规则", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(stringResource(R.string.fmac_no_rules), color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
 
@@ -218,7 +220,7 @@ fun RulesScreen(extraBottomPadding: Dp = 96.dp) {
                                 rule = rule,
                                 onDelete = {
                                     vm.deleteRule(rule) { ok ->
-                                        val message = if (ok) "已删除" else "删除失败"
+                                        val message = if (ok) context.getString(R.string.toast_deleted) else context.getString(R.string.toast_delete_failed)
                                         android.widget.Toast
                                             .makeText(context, message, android.widget.Toast.LENGTH_SHORT)
                                             .show()
@@ -238,7 +240,7 @@ fun RulesScreen(extraBottomPadding: Dp = 96.dp) {
             onConfirm = { path, bits ->
                 showAddDialog = false
                 vm.addRule(path, bits) { ok ->
-                    val message = if (ok) "规则已添加" else "添加失败"
+                    val message = if (ok) context.getString(R.string.toast_rule_added) else context.getString(R.string.toast_add_failed)
                     android.widget.Toast
                         .makeText(context, message, android.widget.Toast.LENGTH_SHORT)
                         .show()
@@ -313,7 +315,7 @@ fun RuleItem(
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     BitChip(
-                        label = if (isDeny) "DENY" else "ALLOW",
+                        label = if (isDeny) stringResource(R.string.fmac_label_deny) else stringResource(R.string.fmac_label_allow),
                         color = accentColor,
                     )
                     Text(
@@ -331,7 +333,7 @@ fun RuleItem(
             }) {
                 Icon(
                     Icons.Default.Delete,
-                    contentDescription = "删除",
+                    contentDescription = stringResource(R.string.cd_delete),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                 )
             }
@@ -375,7 +377,7 @@ fun AddRuleDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         shape = RoundedCornerShape(28.dp),
-        title = { Text("添加规则", fontWeight = FontWeight.Bold) },
+        title = { Text(stringResource(R.string.fmac_add_rule), fontWeight = FontWeight.Bold) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 OutlinedTextField(
@@ -384,16 +386,16 @@ fun AddRuleDialog(
                         path = it
                         pathError = false
                     },
-                    label = { Text("路径") },
+                    label = { Text(stringResource(R.string.fmac_path)) },
                     placeholder = { Text("/data/local/tmp/") },
                     isError = pathError,
-                    supportingText = if (pathError) ({ Text("路径不能为空") }) else null,
+                    supportingText = if (pathError) ({ Text(stringResource(R.string.fmac_path_not_empty)) }) else null,
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
                 )
                 Text(
-                    "权限位",
+                    stringResource(R.string.fmac_permission_bits),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -401,7 +403,7 @@ fun AddRuleDialog(
                     FilterChip(
                         selected = deny,
                         onClick = { deny = !deny },
-                        label = { Text("DENY") },
+                        label = { Text(stringResource(R.string.fmac_label_deny)) },
                         leadingIcon =
                             if (deny) {
                                 { Icon(Icons.Default.Block, null, Modifier.size(16.dp)) }
@@ -438,10 +440,10 @@ fun AddRuleDialog(
                     onConfirm(path.trim(), computeBits())
                 },
                 shape = RoundedCornerShape(14.dp),
-            ) { Text("添加") }
+            ) { Text(stringResource(R.string.dialog_add)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("取消") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.dialog_cancel)) }
         },
     )
 }

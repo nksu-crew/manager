@@ -5,6 +5,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -21,14 +22,20 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import me.nekosu.aqnya.R
+import me.nekosu.aqnya.ui.component.ListRow
 
 @Composable
 fun CapsDialog(
@@ -43,7 +50,7 @@ fun CapsDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                "Capabilities  ·  ${draft.size} / ${LinuxCap.entries.size}",
+                stringResource(R.string.dialog_caps_title, draft.size, LinuxCap.entries.size),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
             )
@@ -62,7 +69,7 @@ fun CapsDialog(
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(10.dp),
                         contentPadding = PaddingValues(horizontal = 4.dp, vertical = 6.dp),
-                    ) { Text("全选", fontSize = 12.sp) }
+                    ) { Text(stringResource(R.string.dialog_select_all), fontSize = 12.sp) }
                     OutlinedButton(
                         onClick = {
                             haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
@@ -71,7 +78,7 @@ fun CapsDialog(
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(10.dp),
                         contentPadding = PaddingValues(horizontal = 4.dp, vertical = 6.dp),
-                    ) { Text("默认", fontSize = 12.sp) }
+                    ) { Text(stringResource(R.string.dialog_default), fontSize = 12.sp) }
                     OutlinedButton(
                         onClick = {
                             haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
@@ -80,7 +87,7 @@ fun CapsDialog(
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(10.dp),
                         contentPadding = PaddingValues(horizontal = 4.dp, vertical = 6.dp),
-                    ) { Text("清空", fontSize = 12.sp) }
+                    ) { Text(stringResource(R.string.dialog_clear), fontSize = 12.sp) }
                 }
 
                 Spacer(Modifier.height(8.dp))
@@ -121,7 +128,7 @@ fun CapsDialog(
                                     fontFamily = FontFamily.Monospace,
                                 )
                                 Text(
-                                    text = cap.description,
+                                    text = stringResource(cap.descriptionRes),
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                                 )
@@ -142,11 +149,11 @@ fun CapsDialog(
                 haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
                 onConfirm(draft)
             }) {
-                Text("确定", fontWeight = FontWeight.SemiBold)
+                Text(stringResource(R.string.dialog_confirm), fontWeight = FontWeight.SemiBold)
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("取消") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.dialog_cancel)) }
         },
     )
 }
@@ -156,10 +163,9 @@ private fun GroupCard(content: @Composable ColumnScope.() -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        colors =
-            CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f),
-            ),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+        ),
     ) {
         Column(content = content)
     }
@@ -205,7 +211,7 @@ fun AppDetailScreen(
             TopAppBar(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.cd_back))
                     }
                 },
                 title = {
@@ -213,7 +219,7 @@ fun AppDetailScreen(
                         Text(
                             text = app.name,
                             style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
+                            fontWeight = FontWeight.Black,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                         )
@@ -243,7 +249,7 @@ fun AppDetailScreen(
                     onBack()
                 },
             ) {
-                Icon(Icons.Filled.Save, contentDescription = "保存")
+                Icon(Icons.Filled.Save, contentDescription = stringResource(R.string.cd_save))
             }
         },
     ) { innerPadding ->
@@ -280,75 +286,41 @@ fun AppDetailScreen(
                                 fontWeight = FontWeight.SemiBold,
                             )
                             Text(
-                                text = "UID: ${app.uid}",
+                                text = stringResource(R.string.app_uid_format, app.uid),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                             )
                         }
                         if (app.isSystem) {
-                            AppTag(label = "system", color = MaterialTheme.colorScheme.secondary)
+                            AppTag(label = stringResource(R.string.app_tag_system), color = MaterialTheme.colorScheme.secondary)
                         }
                     }
 
                     RowDivider()
 
-                    Row(
-                        modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 14.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Icon(
-                            imageVector = if (allowed) Icons.Default.LockOpen else Icons.Default.Lock,
-                            contentDescription = null,
-                            tint =
-                                if (allowed) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.onSurfaceVariant
-                                },
-                        )
-                        Spacer(Modifier.width(14.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                "允许 Root 访问",
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.SemiBold,
-                            )
-                            Text(
-                                if (allowed) "已授权" else "已拒绝",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                            )
-                        }
-                        Switch(
-                            checked = allowed,
-                            onCheckedChange = {
-                                haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                                allowed = it
-                                if (!it) {
-                                    caps = emptySet()
-                                    domain = "u:r:nksu:s0"
-                                    ns = NksuNamespace.INHERITED
-                                } else if (caps.isEmpty()) {
-                                    caps = DEFAULT_CAPS
-                                }
-                            },
-                            thumbContent =
-                                if (allowed) {
-                                    {
-                                        Icon(
-                                            Icons.Filled.CheckCircle,
-                                            null,
-                                            Modifier.size(SwitchDefaults.IconSize),
-                                        )
+                    ListRow(
+                        modifier = Modifier
+                            .padding(horizontal = 4.dp)
+                            .toggleable(
+                                value = allowed,
+                                role = Role.Switch,
+                                onValueChange = { value ->
+                                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                                    allowed = value
+                                    if (!value) {
+                                        caps = emptySet()
+                                        domain = "u:r:nksu:s0"
+                                        ns = NksuNamespace.INHERITED
+                                    } else if (caps.isEmpty()) {
+                                        caps = DEFAULT_CAPS
                                     }
-                                } else {
-                                    null
                                 },
-                        )
-                    }
+                            ),
+                        icon = { Icon(if (allowed) Icons.Default.LockOpen else Icons.Default.Lock, contentDescription = null) },
+                        headline = { Text(stringResource(R.string.app_allow_root), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold) },
+                        supporting = { Text(if (allowed) stringResource(R.string.app_status_granted) else stringResource(R.string.app_status_denied)) },
+                        trailing = { Switch(checked = allowed, onCheckedChange = null) },
+                    )
 
                     Row(
                         modifier =
@@ -377,7 +349,7 @@ fun AppDetailScreen(
                         Spacer(Modifier.width(14.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "${caps.size} / ${LinuxCap.entries.size} 已选",
+                                text = stringResource(R.string.app_caps_selected, caps.size, LinuxCap.entries.size),
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.SemiBold,
                                 color =
@@ -391,11 +363,11 @@ fun AppDetailScreen(
                                 text =
                                     when {
                                         !allowed -> {
-                                            "请先启用 Root 授权"
+                                            stringResource(R.string.app_enable_root_first)
                                         }
 
                                         caps.isEmpty() -> {
-                                            "无 capabilities"
+                                            stringResource(R.string.app_no_capabilities)
                                         }
 
                                         else -> {
@@ -427,7 +399,7 @@ fun AppDetailScreen(
                         modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
                     ) {
                         Text(
-                            text = "SELinux Domain",
+                            text = stringResource(R.string.app_selinux_domain),
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
@@ -460,7 +432,7 @@ fun AppDetailScreen(
                                     ) {
                                         Icon(
                                             Icons.Default.Refresh,
-                                            contentDescription = "重置",
+                                            contentDescription = stringResource(R.string.cd_reset),
                                             modifier = Modifier.size(18.dp),
                                         )
                                     }
@@ -471,7 +443,7 @@ fun AppDetailScreen(
                         if (!allowed) {
                             Spacer(Modifier.height(6.dp))
                             Text(
-                                "请先启用 Root 授权",
+                                stringResource(R.string.app_enable_root_first),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
                             )
@@ -481,7 +453,7 @@ fun AppDetailScreen(
                     RowDivider()
                     Column(modifier = Modifier.padding(vertical = 6.dp)) {
                         Text(
-                            text = "Mount 命名空间",
+                            text = stringResource(R.string.app_mount_namespace),
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
@@ -517,7 +489,7 @@ fun AppDetailScreen(
                                 Spacer(Modifier.width(10.dp))
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
-                                        text = option.label,
+                                        text = stringResource(option.labelRes),
                                         style = MaterialTheme.typography.bodyMedium,
                                         fontWeight = FontWeight.SemiBold,
                                         color =
@@ -528,7 +500,7 @@ fun AppDetailScreen(
                                             },
                                     )
                                     Text(
-                                        text = option.description,
+                                        text = stringResource(option.descriptionRes),
                                         style = MaterialTheme.typography.labelSmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                                     )

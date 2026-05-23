@@ -37,7 +37,7 @@ fun FlutterNavBar(
         }
 
     val scheme = MaterialTheme.colorScheme
-    LaunchedEffect(selectedIndex, scheme.surfaceContainer, navBarVisible) {
+    LaunchedEffect(selectedIndex, scheme, navBarVisible) {
         channel.sendIndex(selectedIndex)
         channel.sendColors(scheme)
         channel.sendNavBarVisible(navBarVisible)

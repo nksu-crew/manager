@@ -30,14 +30,17 @@ class HomeViewModel(
     val ruleCount: StateFlow<Int> = _ruleCount
 
     init {
-        if (_installStatus.value == InstallStatus.INSTALLED) {
-            viewModelScope.launch {
-                withContext(Dispatchers.IO) { ncore.ctl(3) }
-                withContext(Dispatchers.IO) {
-                    val ctx = app.applicationContext
-                    _suCount.value = RootDbHelper(ctx).getAllowedCount()
-                    _ruleCount.value = RuleDbHelper(ctx).getCount()
-                }
+        refresh()
+    }
+
+    fun refresh() {
+        if (_installStatus.value != InstallStatus.INSTALLED) return
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) { ncore.ctl(3) }
+            withContext(Dispatchers.IO) {
+                val ctx = getApplication<Application>().applicationContext
+                _suCount.value = RootDbHelper(ctx).getAllowedCount()
+                _ruleCount.value = RuleDbHelper(ctx).getCount()
             }
         }
     }

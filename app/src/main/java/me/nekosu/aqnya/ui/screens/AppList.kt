@@ -55,6 +55,7 @@ import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
 import me.nekosu.aqnya.R
 import me.nekosu.aqnya.ncore
+import me.nekosu.aqnya.ui.component.groupShape
 import me.nekosu.aqnya.util.RootDbHelper
 import java.io.File
 
@@ -326,13 +327,7 @@ fun getAdapterShape(
     index: Int,
     totalCount: Int,
     cornerRadius: Dp = 20.dp,
-): Shape =
-    when {
-        totalCount <= 1 -> RoundedCornerShape(cornerRadius)
-        index == 0 -> RoundedCornerShape(topStart = cornerRadius, topEnd = cornerRadius)
-        index == totalCount - 1 -> RoundedCornerShape(bottomStart = cornerRadius, bottomEnd = cornerRadius)
-        else -> RoundedCornerShape(0.dp)
-    }
+): Shape = groupShape(index, totalCount, cornerRadius)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -417,7 +412,7 @@ fun HistoryScreen(
                             Text(
                                 text = stringResource(filterMode.labelRes),
                                 style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Bold,
+                                fontWeight = FontWeight.Black,
                             )
                         },
                         actions = {
@@ -503,8 +498,6 @@ fun HistoryScreen(
                 else -> {
                     val pinnedApps = viewModel.pinnedApps
                     val (pinnedList, otherList) = apps.partition { it.packageName in pinnedApps }
-                    val fullList = pinnedList + otherList
-                    val totalSize = fullList.size
 
                     LazyColumn(
                         state = listState,
@@ -512,18 +505,33 @@ fun HistoryScreen(
                         verticalArrangement = Arrangement.spacedBy(2.dp),
                         contentPadding = PaddingValues(top = 12.dp, bottom = extraBottomPadding),
                     ) {
+                        // ── 已授权应用（独立粘连卡片区）──
+                        if (pinnedList.isNotEmpty()) {
+                            item(key = "pinned_section") {
+                                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                    pinnedList.forEachIndexed { index, app ->
+                                        AppInfoItem(
+                                            app = app,
+                                            config = viewModel.appConfigs[app.packageName],
+                                            onClick = { navController.navigate("app_detail/${app.packageName}") },
+                                            shape = groupShape(index, pinnedList.size),
+                                        )
+                                    }
+                                }
+                            }
+                            item(key = "pinned_spacer") { Spacer(Modifier.height(16.dp)) }
+                        }
+
+                        // ── 其余应用 ──
                         itemsIndexed(
-                            fullList,
-                            key = { _, app ->
-                                val prefix = if (app.packageName in pinnedApps) "pinned_" else "other_"
-                                prefix + app.packageName
-                            },
+                            otherList,
+                            key = { _, app -> "other_${app.packageName}" },
                         ) { index, app ->
                             AppInfoItem(
                                 app = app,
                                 config = viewModel.appConfigs[app.packageName],
                                 onClick = { navController.navigate("app_detail/${app.packageName}") },
-                                shape = getAdapterShape(index, totalSize),
+                                shape = groupShape(index, otherList.size),
                                 modifier = Modifier.animateItem(),
                             )
                         }
@@ -602,10 +610,9 @@ fun AppInfoItem(
         },
         modifier = modifier.fillMaxWidth(),
         shape = shape,
-        colors =
-            CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-            ),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Row(
