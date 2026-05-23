@@ -9,7 +9,7 @@ fun ColorScheme.toNavBarColorMap(): Map<String, Int> =
         "surfaceContainer" to surfaceContainer.toArgb(),
         "primaryContainer" to primaryContainer.toArgb(),
         "onPrimaryContainer" to onPrimaryContainer.toArgb(),
-        "secondaryContainer" to primaryContainer.toArgb(),         // Flutter 用它做指示器，重定向到 primaryContainer
+        "secondaryContainer" to primaryContainer.toArgb(), // Flutter 用它做指示器，重定向到 primaryContainer
         "onSecondaryContainer" to onPrimaryContainer.toArgb(),
         "onSurfaceVariant" to onSurfaceVariant.toArgb(),
         "surfaceTint" to surfaceTint.toArgb(),

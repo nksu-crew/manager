@@ -163,9 +163,10 @@ private fun GroupCard(content: @Composable ColumnScope.() -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
-        ),
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+            ),
     ) {
         Column(content = content)
     }
@@ -299,26 +300,37 @@ fun AppDetailScreen(
                     RowDivider()
 
                     ListRow(
-                        modifier = Modifier
-                            .padding(horizontal = 4.dp)
-                            .toggleable(
-                                value = allowed,
-                                role = Role.Switch,
-                                onValueChange = { value ->
-                                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                                    allowed = value
-                                    if (!value) {
-                                        caps = emptySet()
-                                        domain = "u:r:nksu:s0"
-                                        ns = NksuNamespace.INHERITED
-                                    } else if (caps.isEmpty()) {
-                                        caps = DEFAULT_CAPS
-                                    }
-                                },
-                            ),
+                        modifier =
+                            Modifier
+                                .padding(horizontal = 4.dp)
+                                .toggleable(
+                                    value = allowed,
+                                    role = Role.Switch,
+                                    onValueChange = { value ->
+                                        haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                                        allowed = value
+                                        if (!value) {
+                                            caps = emptySet()
+                                            domain = "u:r:nksu:s0"
+                                            ns = NksuNamespace.INHERITED
+                                        } else if (caps.isEmpty()) {
+                                            caps = DEFAULT_CAPS
+                                        }
+                                    },
+                                ),
                         icon = { Icon(if (allowed) Icons.Default.LockOpen else Icons.Default.Lock, contentDescription = null) },
-                        headline = { Text(stringResource(R.string.app_allow_root), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold) },
-                        supporting = { Text(if (allowed) stringResource(R.string.app_status_granted) else stringResource(R.string.app_status_denied)) },
+                        headline = {
+                            Text(
+                                stringResource(R.string.app_allow_root),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                        },
+                        supporting = {
+                            Text(
+                                if (allowed) stringResource(R.string.app_status_granted) else stringResource(R.string.app_status_denied),
+                            )
+                        },
                         trailing = { Switch(checked = allowed, onCheckedChange = null) },
                     )
 

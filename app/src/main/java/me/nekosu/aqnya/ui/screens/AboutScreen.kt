@@ -68,15 +68,19 @@ fun AboutScreen(navController: NavHostController) {
     val scrollBehavior = pinnedScrollBehavior(rememberTopAppBarState())
     val context = LocalContext.current
     val isInPreview = LocalInspectionMode.current
-    val versionName = remember(context, isInPreview) {
-        if (isInPreview) context.getString(R.string.about_preview_version)
-        else try {
-            context.packageManager.getPackageInfo(context.packageName, 0).versionName
-                ?: context.getString(R.string.about_unknown_version)
-        } catch (_: PackageManager.NameNotFoundException) {
-            context.getString(R.string.about_unknown_version)
+    val versionName =
+        remember(context, isInPreview) {
+            if (isInPreview) {
+                context.getString(R.string.about_preview_version)
+            } else {
+                try {
+                    context.packageManager.getPackageInfo(context.packageName, 0).versionName
+                        ?: context.getString(R.string.about_unknown_version)
+                } catch (_: PackageManager.NameNotFoundException) {
+                    context.getString(R.string.about_unknown_version)
+                }
+            }
         }
-    }
 
     Scaffold(
         topBar = {
@@ -97,30 +101,34 @@ fun AboutScreen(navController: NavHostController) {
             )
         },
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        contentWindowInsets = WindowInsets.safeDrawing
-            .only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
+        contentWindowInsets =
+            WindowInsets.safeDrawing
+                .only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
     ) { innerPadding ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp)
-                .padding(top = 16.dp, bottom = 96.dp),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp)
+                    .padding(top = 16.dp, bottom = 96.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Spacer(modifier = Modifier.height(8.dp))
-            val icon = remember {
-                val drawable = ContextCompat.getDrawable(context, R.mipmap.ic_launcher)!!
-                BitmapPainter(drawable.toBitmap().asImageBitmap())
-            }
+            val icon =
+                remember {
+                    val drawable = ContextCompat.getDrawable(context, R.mipmap.ic_launcher)!!
+                    BitmapPainter(drawable.toBitmap().asImageBitmap())
+                }
             Image(
                 painter = icon,
                 contentDescription = null,
-                modifier = Modifier
-                    .size(88.dp)
-                    .clip(RoundedCornerShape(20.dp)),
+                modifier =
+                    Modifier
+                        .size(88.dp)
+                        .clip(RoundedCornerShape(20.dp)),
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -143,12 +151,19 @@ fun AboutScreen(navController: NavHostController) {
             CardGroup {
                 CardItem(index = 0, total = 2) {
                     ListRow(
-                        modifier = Modifier.clickable {
-                            val intent = Intent(Intent.ACTION_VIEW, "https://github.com/aqnya/nekosu".toUri())
-                            context.startActivity(intent)
-                        },
+                        modifier =
+                            Modifier.clickable {
+                                val intent = Intent(Intent.ACTION_VIEW, "https://github.com/aqnya/nekosu".toUri())
+                                context.startActivity(intent)
+                            },
                         icon = { Icon(painter = painterResource(id = R.drawable.code_24px), contentDescription = null) },
-                        headline = { Text(stringResource(R.string.about_repository), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold) },
+                        headline = {
+                            Text(
+                                stringResource(R.string.about_repository),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                        },
                         supporting = { Text(stringResource(R.string.about_repository_summary)) },
                     )
                 }
@@ -161,7 +176,11 @@ fun AboutScreen(navController: NavHostController) {
                             Icon(painter = painterResource(id = R.drawable.source_code_24px), contentDescription = null)
                         },
                         headlineContent = {
-                            Text(stringResource(R.string.about_open_source), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                            Text(
+                                stringResource(R.string.about_open_source),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                            )
                         },
                     )
                 }

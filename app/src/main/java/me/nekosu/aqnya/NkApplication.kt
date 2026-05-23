@@ -21,6 +21,7 @@ class NkApplication : Application() {
     override fun attachBaseContext(base: Context) {
         super.attachBaseContext(LocaleHelper.wrap(base, LocaleHelper.savedLanguageTag(base)))
     }
+
     override fun onCreate() {
         super.onCreate()
         CrashHandler.init(this)

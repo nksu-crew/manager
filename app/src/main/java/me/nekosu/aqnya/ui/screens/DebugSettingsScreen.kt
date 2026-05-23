@@ -6,8 +6,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -40,14 +40,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -85,35 +85,44 @@ fun DebugSettingsScreen(navController: NavController) {
             )
         },
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        contentWindowInsets = WindowInsets.safeDrawing.only(
-            WindowInsetsSides.Top + WindowInsetsSides.Horizontal,
-        ),
+        contentWindowInsets =
+            WindowInsets.safeDrawing.only(
+                WindowInsetsSides.Top + WindowInsetsSides.Horizontal,
+            ),
     ) { innerPadding ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp)
-                .padding(top = 16.dp, bottom = 96.dp),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp)
+                    .padding(top = 16.dp, bottom = 96.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             // ── 功能开关卡片 ──
             CardGroup {
                 CardItem(index = 0, total = 2) {
                     ListRow(
-                        modifier = Modifier
-                            .toggleable(
-                                value = showRules,
-                                role = Role.Switch,
-                                onValueChange = { value ->
-                                    scope.launch {
-                                        DebugPreferences.setShowRules(mContext, value)
-                                    }
-                                },
-                            ),
+                        modifier =
+                            Modifier
+                                .toggleable(
+                                    value = showRules,
+                                    role = Role.Switch,
+                                    onValueChange = { value ->
+                                        scope.launch {
+                                            DebugPreferences.setShowRules(mContext, value)
+                                        }
+                                    },
+                                ),
                         icon = { Icon(Icons.Outlined.Science, contentDescription = null) },
-                        headline = { Text(stringResource(R.string.settings_fmac_config), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold) },
+                        headline = {
+                            Text(
+                                stringResource(R.string.settings_fmac_config),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                        },
                         supporting = { Text(stringResource(R.string.settings_fmac_config_summary)) },
                         trailing = {
                             Switch(
@@ -132,7 +141,13 @@ fun DebugSettingsScreen(navController: NavController) {
                     ListRow(
                         modifier = Modifier.clickable { navController.navigate("selinux_rules") },
                         icon = { Icon(Icons.Outlined.Security, contentDescription = null) },
-                        headline = { Text(stringResource(R.string.settings_selinux_rules), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold) },
+                        headline = {
+                            Text(
+                                stringResource(R.string.settings_selinux_rules),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                        },
                         supporting = { Text(stringResource(R.string.settings_selinux_rules_summary)) },
                         trailing = {
                             Icon(

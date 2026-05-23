@@ -71,26 +71,29 @@ fun OpenSourceScreen(navController: NavHostController) {
             )
         },
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        contentWindowInsets = WindowInsets.safeDrawing
-            .only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
+        contentWindowInsets =
+            WindowInsets.safeDrawing
+                .only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
     ) { innerPadding ->
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = 16.dp),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(2.dp),
             contentPadding = PaddingValues(top = 8.dp, bottom = 96.dp),
         ) {
             itemsIndexed(licenseList) { index, item ->
                 LicenseItemView(
                     item = item,
-                    shape = when {
-                        licenseList.size <= 1 -> RoundedCornerShape(20.dp)
-                        index == 0 -> RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
-                        index == licenseList.lastIndex -> RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp)
-                        else -> RoundedCornerShape(0.dp)
-                    },
+                    shape =
+                        when {
+                            licenseList.size <= 1 -> RoundedCornerShape(20.dp)
+                            index == 0 -> RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
+                            index == licenseList.lastIndex -> RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp)
+                            else -> RoundedCornerShape(0.dp)
+                        },
                     onClick = {
                         val intent = Intent(Intent.ACTION_VIEW, item.url.toUri())
                         context.startActivity(intent)
@@ -110,16 +113,18 @@ fun LicenseItemView(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = shape,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
-        ),
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+            ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable(onClick = onClick)
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onClick)
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
         ) {
             Text(
                 text = "${item.name} - ${item.author}",
@@ -128,10 +133,11 @@ fun LicenseItemView(
             )
             Text(
                 text = item.url,
-                style = MaterialTheme.typography.bodySmall.copy(
-                    color = MaterialTheme.colorScheme.primary,
-                    textDecoration = TextDecoration.Underline,
-                ),
+                style =
+                    MaterialTheme.typography.bodySmall.copy(
+                        color = MaterialTheme.colorScheme.primary,
+                        textDecoration = TextDecoration.Underline,
+                    ),
             )
             Text(
                 text = getLicense(item.type),

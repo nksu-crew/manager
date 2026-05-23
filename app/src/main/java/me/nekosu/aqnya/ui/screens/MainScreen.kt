@@ -138,9 +138,10 @@ fun FloatingBottomNavigationBar(
                         },
                         shape = RoundedCornerShape(50),
                         color = containerColor,
-                        modifier = Modifier
-                            .height(48.dp)
-                            .width(itemWidth),
+                        modifier =
+                            Modifier
+                                .height(48.dp)
+                                .width(itemWidth),
                     ) {
                         Box(
                             contentAlignment = Alignment.Center,
@@ -208,13 +209,14 @@ fun NormalBottomNavigationBar(
                         }
                     }
                 },
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    selectedTextColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    indicatorColor = MaterialTheme.colorScheme.primaryContainer,
-                ),
+                colors =
+                    NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        selectedTextColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                    ),
                 icon = {
                     Icon(
                         imageVector = if (selected) item.selectedIcon else item.unselectedIcon,

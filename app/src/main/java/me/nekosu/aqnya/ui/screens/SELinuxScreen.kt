@@ -34,8 +34,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import me.nekosu.aqnya.ui.theme.NekosuTheme
 import me.nekosu.aqnya.R
+import me.nekosu.aqnya.ui.theme.NekosuTheme
 
 private val Context.selinuxDataStore: DataStore<Preferences> by preferencesDataStore("selinux_rules")
 private val KEY_GROUPS = stringPreferencesKey("groups")
@@ -160,7 +160,9 @@ private fun SelinuxRulesContent(
                                     if (onAddRule(r) == 0) ok++ else fail++
                                 }
                             }
-                                snackMsg = context.getString(R.string.selinux_applied_count, ok) + if (fail > 0) " " + context.getString(R.string.selinux_applied_failed, fail) else ""
+                            snackMsg =
+                                context.getString(R.string.selinux_applied_count, ok) +
+                                if (fail > 0) " " + context.getString(R.string.selinux_applied_failed, fail) else ""
                         },
                         containerColor = MaterialTheme.colorScheme.secondaryContainer,
                     ) {
@@ -272,7 +274,14 @@ private fun SelinuxRulesContent(
                         },
                         onApplyRule = { rule ->
                             val ret = onAddRule(rule)
-                            snackMsg = if (ret == 0) context.getString(R.string.selinux_rule_applied) else context.getString(R.string.selinux_rule_failed, ret)
+                            snackMsg =
+                                if (ret ==
+                                    0
+                                ) {
+                                    context.getString(R.string.selinux_rule_applied)
+                                } else {
+                                    context.getString(R.string.selinux_rule_failed, ret)
+                                }
                         },
                     )
                 }
@@ -384,7 +393,13 @@ private fun GroupCard(
                         color = requiredColor.copy(alpha = 0.12f),
                     ) {
                         Text(
-                            if (group.required) stringResource(R.string.selinux_label_required) else stringResource(R.string.selinux_optional),
+                            if (group.required) {
+                                stringResource(
+                                    R.string.selinux_label_required,
+                                )
+                            } else {
+                                stringResource(R.string.selinux_optional)
+                            },
                             modifier = Modifier.padding(horizontal = 6.dp, vertical = 1.dp),
                             style =
                                 MaterialTheme.typography.labelSmall.copy(

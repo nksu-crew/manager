@@ -15,7 +15,6 @@ import androidx.core.net.toUri
 import me.nekosu.aqnya.BuildConfig
 import me.nekosu.aqnya.util.UpdateChecker
 
-
 @Composable
 fun CheckUpdate(
     owner: String,

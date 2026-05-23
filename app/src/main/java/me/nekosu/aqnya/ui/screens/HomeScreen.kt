@@ -20,12 +20,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
+import androidx.compose.material.icons.automirrored.filled.Rule
 import androidx.compose.material.icons.filled.Android
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Memory
 import androidx.compose.material.icons.filled.Numbers
 import androidx.compose.material.icons.filled.PhoneAndroid
-import androidx.compose.material.icons.automirrored.filled.Rule
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SystemUpdate
 import androidx.compose.material3.Card
@@ -91,20 +91,22 @@ fun HomeScreenContent(
                         fontWeight = FontWeight.Black,
                     )
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface,
-                ),
+                colors =
+                    TopAppBarDefaults.centerAlignedTopAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    ),
             )
         },
     ) { innerPadding ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp, vertical = 12.dp)
-                .padding(bottom = 88.dp),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .padding(bottom = 88.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             StatusCard(
@@ -350,10 +352,11 @@ fun StatCard(
                 Icon(
                     imageVector = bgIcon,
                     contentDescription = null,
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .size(58.dp)
-                        .padding(end = 18.dp, bottom = 12.dp),
+                    modifier =
+                        Modifier
+                            .align(Alignment.BottomEnd)
+                            .size(58.dp)
+                            .padding(end = 18.dp, bottom = 12.dp),
                     tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f),
                 )
             }

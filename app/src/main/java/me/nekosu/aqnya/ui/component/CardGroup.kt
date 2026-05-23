@@ -30,12 +30,17 @@ import androidx.compose.ui.unit.dp
  * 粘连卡片分组容器
  * 与 AppList 的 getAdapterShape 逻辑一致
  */
-fun groupShape(index: Int, total: Int, radius: Dp = 20.dp): Shape = when {
-    total <= 1  -> RoundedCornerShape(radius)
-    index == 0  -> RoundedCornerShape(topStart = radius, topEnd = radius)
-    index == total - 1 -> RoundedCornerShape(bottomStart = radius, bottomEnd = radius)
-    else        -> RoundedCornerShape(0.dp)
-}
+fun groupShape(
+    index: Int,
+    total: Int,
+    radius: Dp = 20.dp,
+): Shape =
+    when {
+        total <= 1 -> RoundedCornerShape(radius)
+        index == 0 -> RoundedCornerShape(topStart = radius, topEnd = radius)
+        index == total - 1 -> RoundedCornerShape(bottomStart = radius, bottomEnd = radius)
+        else -> RoundedCornerShape(0.dp)
+    }
 
 @Composable
 fun CardGroup(content: @Composable ColumnScope.() -> Unit) {
@@ -52,9 +57,10 @@ fun CardItem(
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = groupShape(index, total),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
-        ),
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+            ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         content()

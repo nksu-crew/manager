@@ -9,8 +9,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -53,8 +53,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -91,7 +91,10 @@ enum class ThemeMode(
     }
 }
 
-enum class ThemeColor(val label: String, val value: Int) {
+enum class ThemeColor(
+    val label: String,
+    val value: Int,
+) {
     MATERIAL_YOU("Material You", 0),
     CATPPUCCIN_BLUE("Catppuccin Blue", 1),
     CATPPUCCIN_LAVENDER("Catppuccin Lavender", 2),
@@ -121,11 +124,15 @@ fun SettingsScreen(navController: NavController) {
 
     val amoledEnabled by DebugPreferences.amoledFlow(mContext).collectAsState(initial = false)
 
-    val currentLang = LocaleHelper.savedLanguageTag(mContext)
-        .ifBlank { "" }
-    val currentLangLabel = LocaleHelper.availableLanguages
-        .find { it.tag == currentLang }?.let { stringResource(it.labelRes) }
-        ?: stringResource(R.string.language_system)
+    val currentLang =
+        LocaleHelper
+            .savedLanguageTag(mContext)
+            .ifBlank { "" }
+    val currentLangLabel =
+        LocaleHelper.availableLanguages
+            .find { it.tag == currentLang }
+            ?.let { stringResource(it.labelRes) }
+            ?: stringResource(R.string.language_system)
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -141,18 +148,20 @@ fun SettingsScreen(navController: NavController) {
                 scrollBehavior = scrollBehavior,
             )
         },
-        contentWindowInsets = WindowInsets.safeDrawing.only(
-            WindowInsetsSides.Top + WindowInsetsSides.Horizontal,
-        ),
+        contentWindowInsets =
+            WindowInsets.safeDrawing.only(
+                WindowInsetsSides.Top + WindowInsetsSides.Horizontal,
+            ),
     ) { innerPadding ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
-                .padding(top = 16.dp)
-                .padding(bottom = 96.dp)
-                .padding(horizontal = 16.dp),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .verticalScroll(rememberScrollState())
+                    .padding(top = 16.dp)
+                    .padding(bottom = 96.dp)
+                    .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             // ── 语言 ──
@@ -216,7 +225,13 @@ private fun LanguageSection(
             ListRow(
                 modifier = Modifier.clickable { menuExpanded = true },
                 icon = { Icon(Icons.Outlined.Translate, contentDescription = null) },
-                headline = { Text(stringResource(R.string.language_title), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold) },
+                headline = {
+                    Text(
+                        stringResource(R.string.language_title),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                },
                 supporting = { Text(currentLangLabel) },
                 trailing = {
                     Box {
@@ -230,13 +245,24 @@ private fun LanguageSection(
                                     text = {
                                         Text(
                                             stringResource(lang.labelRes),
-                                            fontWeight = if (currentLangLabel == stringResource(lang.labelRes)) FontWeight.SemiBold else FontWeight.Normal,
+                                            fontWeight =
+                                                if (currentLangLabel ==
+                                                    stringResource(lang.labelRes)
+                                                ) {
+                                                    FontWeight.SemiBold
+                                                } else {
+                                                    FontWeight.Normal
+                                                },
                                         )
                                     },
-                                    onClick = { menuExpanded = false; onLanguageChange(lang.tag) },
+                                    onClick = {
+                                        menuExpanded = false
+                                        onLanguageChange(lang.tag)
+                                    },
                                     trailingIcon = {
-                                        if (currentLangLabel == stringResource(lang.labelRes))
+                                        if (currentLangLabel == stringResource(lang.labelRes)) {
                                             Icon(Icons.Default.Check, null, Modifier.size(20.dp))
+                                        }
                                     },
                                 )
                             }
@@ -297,10 +323,14 @@ private fun AppearanceSection(
                                             fontWeight = if (currentThemeMode == mode) FontWeight.SemiBold else FontWeight.Normal,
                                         )
                                     },
-                                    onClick = { themeMenuExpanded = false; onThemeChange(mode) },
+                                    onClick = {
+                                        themeMenuExpanded = false
+                                        onThemeChange(mode)
+                                    },
                                     trailingIcon = {
-                                        if (currentThemeMode == mode)
+                                        if (currentThemeMode == mode) {
                                             Icon(Icons.Default.Check, null, Modifier.size(20.dp))
+                                        }
                                     },
                                 )
                             }
@@ -317,7 +347,11 @@ private fun AppearanceSection(
                 colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                 leadingContent = { Icon(Icons.Outlined.Palette, contentDescription = null) },
                 headlineContent = {
-                    Text(stringResource(R.string.settings_theme_color), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                    Text(
+                        stringResource(R.string.settings_theme_color),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                    )
                 },
                 supportingContent = { Text(currentThemeColor.label) },
                 trailingContent = {
@@ -330,9 +364,22 @@ private fun AppearanceSection(
                             ThemeColor.entries.forEach { color ->
                                 DropdownMenuItem(
                                     text = {
-                                        Text(color.label, fontWeight = if (currentThemeColor == color) FontWeight.SemiBold else FontWeight.Normal)
+                                        Text(
+                                            color.label,
+                                            fontWeight =
+                                                if (currentThemeColor ==
+                                                    color
+                                                ) {
+                                                    FontWeight.SemiBold
+                                                } else {
+                                                    FontWeight.Normal
+                                                },
+                                        )
                                     },
-                                    onClick = { themeColorMenuExpanded = false; onThemeColorChange(color) },
+                                    onClick = {
+                                        themeColorMenuExpanded = false
+                                        onThemeColorChange(color)
+                                    },
                                     trailingIcon = {
                                         if (currentThemeColor == color) Icon(Icons.Default.Check, null, Modifier.size(20.dp))
                                     },
@@ -349,7 +396,13 @@ private fun AppearanceSection(
             ListRow(
                 modifier = Modifier.toggleable(value = amoledEnabled, role = Role.Switch, onValueChange = onAmoledChange),
                 icon = { Icon(Icons.Outlined.PhoneAndroid, contentDescription = null) },
-                headline = { Text(stringResource(R.string.settings_amoled_black), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold) },
+                headline = {
+                    Text(
+                        stringResource(R.string.settings_amoled_black),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                },
                 supporting = { Text(stringResource(R.string.settings_amoled_black_summary)) },
                 trailing = { Switch(checked = amoledEnabled, onCheckedChange = onAmoledChange) },
             )
@@ -386,10 +439,14 @@ private fun AppearanceSection(
                                             fontWeight = if (currentNavBarStyle == style) FontWeight.SemiBold else FontWeight.Normal,
                                         )
                                     },
-                                    onClick = { navBarStyleMenuExpanded = false; onNavBarStyleChange(style) },
+                                    onClick = {
+                                        navBarStyleMenuExpanded = false
+                                        onNavBarStyleChange(style)
+                                    },
                                     trailingIcon = {
-                                        if (currentNavBarStyle == style)
+                                        if (currentNavBarStyle == style) {
                                             Icon(Icons.Default.Check, null, Modifier.size(20.dp))
+                                        }
                                     },
                                 )
                             }
@@ -415,7 +472,13 @@ private fun ToolsSection(
             ListRow(
                 modifier = Modifier.clickable { onExportLog() },
                 icon = { Icon(Icons.Outlined.BugReport, contentDescription = null) },
-                headline = { Text(stringResource(R.string.export_log), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold) },
+                headline = {
+                    Text(
+                        stringResource(R.string.export_log),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                },
                 supporting = { Text(stringResource(R.string.export_log_describe)) },
             )
         }
@@ -424,7 +487,13 @@ private fun ToolsSection(
             ListRow(
                 modifier = Modifier.clickable { onDebugClick() },
                 icon = { Icon(Icons.Outlined.Science, contentDescription = null) },
-                headline = { Text(stringResource(R.string.settings_debug), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold) },
+                headline = {
+                    Text(
+                        stringResource(R.string.settings_debug),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                },
                 supporting = { Text(stringResource(R.string.settings_debug_summary)) },
                 trailing = {
                     Icon(Icons.Outlined.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -443,18 +512,18 @@ private fun AboutSection(onAboutClick: () -> Unit) {
     CardGroup {
         CardItem(index = 0, total = 1) {
             ListItem(
-            modifier = Modifier.fillMaxWidth().clickable { onAboutClick() },
-            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-            leadingContent = { Icon(Icons.Outlined.Info, contentDescription = null) },
-            headlineContent = {
-                Text(
-                    stringResource(R.string.about),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                )
-            },
-        )
-    }
+                modifier = Modifier.fillMaxWidth().clickable { onAboutClick() },
+                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                leadingContent = { Icon(Icons.Outlined.Info, contentDescription = null) },
+                headlineContent = {
+                    Text(
+                        stringResource(R.string.about),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                },
+            )
+        }
     }
 }
 

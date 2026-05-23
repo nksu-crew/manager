@@ -66,8 +66,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import me.nekosu.aqnya.ncore
 import me.nekosu.aqnya.R
+import me.nekosu.aqnya.ncore
 import me.nekosu.aqnya.util.FMAC_BIT_DENY
 import me.nekosu.aqnya.util.FmacRule
 import me.nekosu.aqnya.util.RuleDbHelper
@@ -220,7 +220,14 @@ fun RulesScreen(extraBottomPadding: Dp = 96.dp) {
                                 rule = rule,
                                 onDelete = {
                                     vm.deleteRule(rule) { ok ->
-                                        val message = if (ok) context.getString(R.string.toast_deleted) else context.getString(R.string.toast_delete_failed)
+                                        val message =
+                                            if (ok) {
+                                                context.getString(
+                                                    R.string.toast_deleted,
+                                                )
+                                            } else {
+                                                context.getString(R.string.toast_delete_failed)
+                                            }
                                         android.widget.Toast
                                             .makeText(context, message, android.widget.Toast.LENGTH_SHORT)
                                             .show()
