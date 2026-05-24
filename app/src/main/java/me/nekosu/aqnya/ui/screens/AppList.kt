@@ -677,12 +677,13 @@ fun AppTag(
     }
 }
 
-private val iconCache = object : LruCache<String, ImageBitmap>(16 * 1024 * 1024) {
-    override fun sizeOf(
-        key: String,
-        value: ImageBitmap,
-    ): Int = value.width * value.height * 4
-}
+private val iconCache =
+    object : LruCache<String, ImageBitmap>(16 * 1024 * 1024) {
+        override fun sizeOf(
+            key: String,
+            value: ImageBitmap,
+        ): Int = value.width * value.height * 4
+    }
 
 @Composable
 fun AppIcon(

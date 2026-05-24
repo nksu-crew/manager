@@ -193,24 +193,26 @@ fun AppDetailScreen(
 ) {
     var allowed by rememberSaveable { mutableStateOf(config?.allowed ?: false) }
 
-    val capsSaver = remember {
-        val labelMap = LinuxCap.entries.associateBy { it.label }
-        Saver<Set<LinuxCap>, List<String>>(
-            save = { it.map { cap -> cap.label } },
-            restore = { it.mapNotNull { label -> labelMap[label] }.toSet() },
-        )
-    }
+    val capsSaver =
+        remember {
+            val labelMap = LinuxCap.entries.associateBy { it.label }
+            Saver<Set<LinuxCap>, List<String>>(
+                save = { it.map { cap -> cap.label } },
+                restore = { it.mapNotNull { label -> labelMap[label] }.toSet() },
+            )
+        }
     var caps by rememberSaveable(stateSaver = capsSaver) { mutableStateOf(config?.caps ?: DEFAULT_CAPS) }
 
     var domain by rememberSaveable { mutableStateOf(config?.selinuxDomain ?: "u:r:nksu:s0") }
 
-    val nsSaver = remember {
-        val valueMap = NksuNamespace.entries.associateBy { it.value }
-        Saver<NksuNamespace, Int>(
-            save = { it.value },
-            restore = { valueMap[it] ?: NksuNamespace.INHERITED },
-        )
-    }
+    val nsSaver =
+        remember {
+            val valueMap = NksuNamespace.entries.associateBy { it.value }
+            Saver<NksuNamespace, Int>(
+                save = { it.value },
+                restore = { valueMap[it] ?: NksuNamespace.INHERITED },
+            )
+        }
     var ns by rememberSaveable(stateSaver = nsSaver) { mutableStateOf(config?.namespace ?: NksuNamespace.INHERITED) }
 
     var showCapsDialog by rememberSaveable { mutableStateOf(false) }

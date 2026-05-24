@@ -267,7 +267,7 @@ fun MainScreen() {
     val bottomNavAlpha by animateFloatAsState(
         targetValue = if (showBottomBar) 1f else 0f,
         animationSpec = tween(durationMillis = if (showBottomBar) 200 else 150),
-        label = "bottomNavAlpha"
+        label = "bottomNavAlpha",
     )
 
     var navBarVisible by remember { mutableStateOf(true) }
@@ -315,10 +315,11 @@ fun MainScreen() {
         bottomBar = {
             if (navBarStyle == NavBarStyle.NORMAL) {
                 Box(
-                    modifier = Modifier.graphicsLayer {
-                        alpha = bottomNavAlpha
-                        translationY = (1f - bottomNavAlpha) * size.height
-                    }
+                    modifier =
+                        Modifier.graphicsLayer {
+                            alpha = bottomNavAlpha
+                            translationY = (1f - bottomNavAlpha) * size.height
+                        },
                 ) {
                     NormalBottomNavigationBar(navItems, currentPage) { index ->
                         scope.launch { pagerState.animateScrollToPage(index) }
