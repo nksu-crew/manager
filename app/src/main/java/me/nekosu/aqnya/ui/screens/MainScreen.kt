@@ -2,7 +2,6 @@ package me.nekosu.aqnya.ui.screens
 
 import android.app.Application
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
@@ -28,6 +27,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -47,11 +48,14 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -66,8 +70,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -86,12 +88,10 @@ import me.nekosu.aqnya.util.rememberPermissionState
 
 @Composable
 fun FloatingBottomNavigationBar(
-    navController: NavController,
     items: List<BottomNavItem>,
+    selectedIndex: Int,
+    onTabClick: (Int) -> Unit,
 ) {
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
-
     Box(
         modifier =
             Modifier
@@ -115,10 +115,10 @@ fun FloatingBottomNavigationBar(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                items.forEach { item ->
-                    val selected = currentRoute == item.route
-
-                    val containerColor = if (selected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
+                items.forEachIndexed { index, item ->
+                    val selected = index == selectedIndex
+                    val containerColor =
+                        if (selected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
 
                     val itemWidth by animateDpAsState(
                         targetValue = if (selected) 88.dp else 48.dp,
@@ -127,15 +127,7 @@ fun FloatingBottomNavigationBar(
                     )
 
                     Surface(
-                        onClick = {
-                            navController.navigate(item.route) {
-                                launchSingleTop = true
-                                restoreState = true
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
-                                }
-                            }
-                        },
+                        onClick = { onTabClick(index) },
                         shape = RoundedCornerShape(50),
                         color = containerColor,
                         modifier =
@@ -187,28 +179,18 @@ fun FloatingBottomNavigationBar(
 
 @Composable
 fun NormalBottomNavigationBar(
-    navController: NavController,
     items: List<BottomNavItem>,
+    selectedIndex: Int,
+    onTabClick: (Int) -> Unit,
 ) {
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
-
     NavigationBar(
         containerColor = MaterialTheme.colorScheme.surface,
     ) {
-        items.forEach { item ->
-            val selected = currentRoute == item.route
+        items.forEachIndexed { index, item ->
+            val selected = index == selectedIndex
             NavigationBarItem(
                 selected = selected,
-                onClick = {
-                    navController.navigate(item.route) {
-                        launchSingleTop = true
-                        restoreState = true
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true
-                        }
-                    }
-                },
+                onClick = { onTabClick(index) },
                 colors =
                     NavigationBarItemDefaults.colors(
                         selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -231,19 +213,14 @@ fun NormalBottomNavigationBar(
 
 @Composable
 fun BottomNavigationBar(
-    navController: NavController,
     items: List<BottomNavItem>,
+    selectedIndex: Int,
+    onTabClick: (Int) -> Unit,
     style: NavBarStyle,
 ) {
     when (style) {
-        NavBarStyle.FLOATING -> {
-            FloatingBottomNavigationBar(navController, items)
-        }
-
-        NavBarStyle.NORMAL -> {
-            NormalBottomNavigationBar(navController, items)
-        }
-
+        NavBarStyle.FLOATING -> FloatingBottomNavigationBar(items, selectedIndex, onTabClick)
+        NavBarStyle.NORMAL -> NormalBottomNavigationBar(items, selectedIndex, onTabClick)
         NavBarStyle.FLUTTER -> {}
     }
 }
@@ -265,20 +242,18 @@ fun MainScreen() {
     val navBarStyle = NavBarStyle.fromValue(navBarStyleValue)
 
     val miuiAppsPermState = rememberPermissionState(AppPermission.MIUI_GET_INSTALLED_APPS)
+    val scope = rememberCoroutineScope()
 
-    val topLevelRoutes =
-        remember {
-            setOf(
-                BottomNavItem.Home.route,
-                BottomNavItem.History.route,
-                BottomNavItem.FmacRules.route,
-                BottomNavItem.Settings.route,
-            )
-        }
+    val pagerState = rememberPagerState(
+        initialPage = 0,
+        pageCount = { navItems.size },
+    )
+    val currentPage by remember { derivedStateOf { pagerState.currentPage } }
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-    val showBottomBar = currentRoute in topLevelRoutes
+    val showBottomBar = currentRoute == "main"
+
     var navBarVisible by remember { mutableStateOf(true) }
     val nestedScrollConnection =
         remember {
@@ -305,10 +280,11 @@ fun MainScreen() {
     }
 
     LaunchedEffect(showRules) {
-        if (!showRules &&
-            navController.currentBackStackEntry?.destination?.route == BottomNavItem.FmacRules.route
-        ) {
-            navController.popBackStack()
+        if (!showRules) {
+            val rulesIndex = navItems.indexOfFirst { it is BottomNavItem.FmacRules }
+            if (pagerState.currentPage == rulesIndex) {
+                pagerState.scrollToPage(0)
+            }
         }
     }
 
@@ -320,7 +296,9 @@ fun MainScreen() {
                     enter = fadeIn(tween(200)) + slideInVertically { it },
                     exit = fadeOut(tween(150)) + slideOutVertically { it },
                 ) {
-                    NormalBottomNavigationBar(navController, navItems)
+                    NormalBottomNavigationBar(navItems, currentPage) { index ->
+                        scope.launch { pagerState.animateScrollToPage(index) }
+                    }
                 }
             }
         },
@@ -329,99 +307,104 @@ fun MainScreen() {
             modifier =
                 Modifier
                     .fillMaxSize()
-                    .padding(innerPadding)
-                    .nestedScroll(nestedScrollConnection),
+                    .padding(innerPadding),
         ) {
             NavHost(
                 navController = navController,
-                startDestination = BottomNavItem.Home.route,
-                modifier = Modifier.fillMaxSize(),
+                startDestination = "main",
             ) {
-                val commonTween = tween<Float>(300)
+                composable("main") {
+                    Box(
+                        modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .nestedScroll(nestedScrollConnection),
+                    ) {
+                        HorizontalPager(
+                            state = pagerState,
+                            beyondViewportPageCount = 1,
+                            modifier = Modifier.fillMaxSize(),
+                        ) { page ->
+                            val item = navItems[page]
+                            when (item) {
+                                BottomNavItem.Home ->
+                                    HomeScreen(
+                                        viewModel = homeViewModel,
+                                        onNavigateToApps = {
+                                            val idx = navItems.indexOfFirst { it is BottomNavItem.History }
+                                            if (idx >= 0) scope.launch { pagerState.animateScrollToPage(idx) }
+                                        },
+                                        onNavigateToRules = {
+                                            val idx = navItems.indexOfFirst { it is BottomNavItem.FmacRules }
+                                            if (idx >= 0) scope.launch { pagerState.animateScrollToPage(idx) }
+                                        },
+                                    )
 
-                composable(
-                    route = BottomNavItem.Home.route,
-                    enterTransition = { fadeIn(commonTween) },
-                    exitTransition = { fadeOut(commonTween) },
-                    popEnterTransition = { fadeIn(commonTween) },
-                    popExitTransition = { fadeOut(commonTween) },
-                ) {
-                    HomeScreen(
-                        viewModel = homeViewModel,
-                        onNavigateToApps = {
-                            navController.navigate(BottomNavItem.History.route) {
-                                launchSingleTop = true
-                                restoreState = true
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
+                                BottomNavItem.History ->
+                                    HistoryScreen(
+                                        navController = navController,
+                                        extraBottomPadding = if (navBarStyle == NavBarStyle.FLOATING) 96.dp else 12.dp,
+                                    )
+
+                                BottomNavItem.FmacRules ->
+                                    RulesScreen()
+
+                                BottomNavItem.Settings ->
+                                    SettingsScreen(navController)
+                            }
+                        }
+
+                        if (navBarStyle == NavBarStyle.FLOATING) {
+                            AnimatedVisibility(
+                                visible = navBarVisible,
+                                enter = fadeIn(tween(200)) + slideInVertically { it },
+                                exit = fadeOut(tween(150)) + slideOutVertically { it },
+                                modifier = Modifier.align(Alignment.BottomCenter),
+                            ) {
+                                FloatingBottomNavigationBar(navItems, currentPage) { index ->
+                                    scope.launch { pagerState.animateScrollToPage(index) }
                                 }
                             }
-                        },
-                        onNavigateToRules = {
-                            navController.navigate(BottomNavItem.FmacRules.route) {
-                                launchSingleTop = true
-                                restoreState = true
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
-                                }
+                        } else if (navBarStyle == NavBarStyle.FLUTTER) {
+                            AnimatedVisibility(
+                                visible = navBarVisible,
+                                enter = fadeIn(tween(200)) + slideInVertically { it },
+                                exit = fadeOut(tween(150)) + slideOutVertically { it },
+                                modifier = Modifier.align(Alignment.BottomCenter),
+                            ) {
+                                FlutterNavBar(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    selectedIndex = currentPage,
+                                    navBarVisible = navBarVisible,
+                                    onTabSelected = { i ->
+                                        if (i < navItems.size) scope.launch { pagerState.animateScrollToPage(i) }
+                                    },
+                                )
                             }
-                        },
-                    )
-                }
-
-                composable(
-                    route = BottomNavItem.History.route,
-                    enterTransition = { fadeIn(commonTween) },
-                    exitTransition = { fadeOut(commonTween) },
-                    popEnterTransition = { fadeIn(commonTween) },
-                    popExitTransition = { fadeOut(commonTween) },
-                ) {
-                    HistoryScreen(
-                        navController = navController,
-                        extraBottomPadding = if (navBarStyle == NavBarStyle.FLOATING) 96.dp else 12.dp,
-                    )
-                }
-
-                composable(
-                    route = BottomNavItem.FmacRules.route,
-                    enterTransition = { fadeIn(commonTween) },
-                    exitTransition = { fadeOut(commonTween) },
-                    popEnterTransition = { fadeIn(commonTween) },
-                    popExitTransition = { fadeOut(commonTween) },
-                ) {
-                    RulesScreen()
-                }
-
-                composable(
-                    route = BottomNavItem.Settings.route,
-                    enterTransition = { fadeIn(commonTween) },
-                    exitTransition = { fadeOut(commonTween) },
-                    popEnterTransition = { fadeIn(commonTween) },
-                    popExitTransition = { fadeOut(commonTween) },
-                ) {
-                    SettingsScreen(navController)
+                        }
+                    }
                 }
 
                 composable(
                     route = "about",
-                    enterTransition = { fadeIn(commonTween) },
-                    exitTransition = { fadeOut(commonTween) },
+                    enterTransition = { fadeIn(tween(300)) },
+                    exitTransition = { fadeOut(tween(300)) },
                 ) {
                     AboutScreen(navController)
                 }
 
                 composable(
                     route = "open_source",
-                    enterTransition = { fadeIn(commonTween) },
-                    exitTransition = { fadeOut(commonTween) },
+                    enterTransition = { fadeIn(tween(300)) },
+                    exitTransition = { fadeOut(tween(300)) },
                 ) {
                     OpenSourceScreen(navController)
                 }
 
                 composable(
                     route = "debug_settings",
-                    enterTransition = { fadeIn(commonTween) },
-                    exitTransition = { fadeOut(commonTween) },
+                    enterTransition = { fadeIn(tween(300)) },
+                    exitTransition = { fadeOut(tween(300)) },
                 ) {
                     DebugSettingsScreen(navController)
                 }
@@ -450,6 +433,7 @@ fun MainScreen() {
                         LoadingState()
                     }
                 }
+
                 composable("selinux_rules") {
                     SelinuxRulesPage(
                         onAddRule = { rule ->
@@ -468,40 +452,6 @@ fun MainScreen() {
             }
 
             CheckUpdate(owner = "aqnya", repo = "nekosu")
-
-            if (navBarStyle == NavBarStyle.FLOATING) {
-                AnimatedVisibility(
-                    visible = showBottomBar,
-                    enter = fadeIn(tween(200)) + slideInVertically { it },
-                    exit = fadeOut(tween(150)) + slideOutVertically { it },
-                    modifier = Modifier.align(Alignment.BottomCenter),
-                ) {
-                    FloatingBottomNavigationBar(navController, navItems)
-                }
-            } else if (navBarStyle == NavBarStyle.FLUTTER) {
-                AnimatedVisibility(
-                    visible = showBottomBar,
-                    enter = fadeIn(tween(200)) + slideInVertically { it },
-                    exit = fadeOut(tween(150)) + slideOutVertically { it },
-                    modifier = Modifier.align(Alignment.BottomCenter),
-                ) {
-                    val currentIndex = navItems.indexOfFirst { it.route == currentRoute }.coerceAtLeast(0)
-                    FlutterNavBar(
-                        modifier = Modifier.fillMaxWidth(),
-                        selectedIndex = currentIndex,
-                        navBarVisible = navBarVisible,
-                        onTabSelected = { i ->
-                            navController.navigate(navItems[i].route) {
-                                launchSingleTop = true
-                                restoreState = true
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
-                                }
-                            }
-                        },
-                    )
-                }
-            }
         }
     }
 }
