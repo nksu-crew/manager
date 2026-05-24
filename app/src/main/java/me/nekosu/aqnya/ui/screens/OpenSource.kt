@@ -157,10 +157,10 @@ private val licenseList =
             LicenseType.Apache2,
         ),
         LicenseItem(
-            "Zig Software Foundation",
-            "Zig Programming Language",
-            "https://codeberg.org/ziglang/zig",
-            LicenseType.MIT,
+            "The Go Authors",
+            "Go Programming Language",
+            "https://github.com/golang/go",
+            LicenseType.BSD3,
         ),
         LicenseItem(
             "Google",
