@@ -184,7 +184,7 @@ fun NormalBottomNavigationBar(
     onTabClick: (Int) -> Unit,
 ) {
     NavigationBar(
-        containerColor = MaterialTheme.colorScheme.surface,
+        containerColor = MaterialTheme.colorScheme.surfaceContainer,
     ) {
         items.forEachIndexed { index, item ->
             val selected = index == selectedIndex
@@ -312,6 +312,7 @@ fun MainScreen() {
             NavHost(
                 navController = navController,
                 startDestination = "main",
+                modifier = Modifier.fillMaxSize(),
             ) {
                 composable("main") {
                     Box(
@@ -430,7 +431,12 @@ fun MainScreen() {
                                 navController.popBackStack()
                             }
                         }
-                        LoadingState()
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            LoadingState()
+                        }
                     }
                 }
 

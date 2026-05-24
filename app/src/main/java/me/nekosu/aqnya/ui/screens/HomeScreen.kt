@@ -344,7 +344,7 @@ fun StatCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         colors =
             CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                containerColor = MaterialTheme.colorScheme.surfaceContainer,
             ),
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
@@ -357,7 +357,7 @@ fun StatCard(
                             .align(Alignment.BottomEnd)
                             .size(58.dp)
                             .padding(end = 18.dp, bottom = 12.dp),
-                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f),
+                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f),
                 )
             }
             Column(
@@ -419,7 +419,7 @@ fun DeviceInfoCard(modifier: Modifier = Modifier) {
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
             colors =
                 CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
                 ),
         ) {
             Column(modifier = Modifier.padding(vertical = 8.dp)) {

@@ -165,7 +165,7 @@ private fun GroupCard(content: @Composable ColumnScope.() -> Unit) {
         shape = RoundedCornerShape(20.dp),
         colors =
             CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                containerColor = MaterialTheme.colorScheme.surfaceContainer,
             ),
     ) {
         Column(content = content)

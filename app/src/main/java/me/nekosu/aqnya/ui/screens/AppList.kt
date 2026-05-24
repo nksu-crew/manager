@@ -612,7 +612,7 @@ fun AppInfoItem(
         shape = shape,
         colors =
             CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                containerColor = MaterialTheme.colorScheme.surfaceContainer,
             ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {

@@ -425,7 +425,7 @@ fun AddRuleDialog(
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(12.dp))
                             .background(
-                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                MaterialTheme.colorScheme.surfaceContainerHigh,
                             ).padding(horizontal = 14.dp, vertical = 10.dp),
                 ) {
                     Text(
