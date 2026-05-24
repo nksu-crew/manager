@@ -55,7 +55,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -74,6 +73,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.launch
 import me.nekosu.aqnya.KeyUtils
 import me.nekosu.aqnya.R
 import me.nekosu.aqnya.ncore
@@ -219,8 +219,14 @@ fun BottomNavigationBar(
     style: NavBarStyle,
 ) {
     when (style) {
-        NavBarStyle.FLOATING -> FloatingBottomNavigationBar(items, selectedIndex, onTabClick)
-        NavBarStyle.NORMAL -> NormalBottomNavigationBar(items, selectedIndex, onTabClick)
+        NavBarStyle.FLOATING -> {
+            FloatingBottomNavigationBar(items, selectedIndex, onTabClick)
+        }
+
+        NavBarStyle.NORMAL -> {
+            NormalBottomNavigationBar(items, selectedIndex, onTabClick)
+        }
+
         NavBarStyle.FLUTTER -> {}
     }
 }
@@ -244,10 +250,11 @@ fun MainScreen() {
     val miuiAppsPermState = rememberPermissionState(AppPermission.MIUI_GET_INSTALLED_APPS)
     val scope = rememberCoroutineScope()
 
-    val pagerState = rememberPagerState(
-        initialPage = 0,
-        pageCount = { navItems.size },
-    )
+    val pagerState =
+        rememberPagerState(
+            initialPage = 0,
+            pageCount = { navItems.size },
+        )
     val currentPage by remember { derivedStateOf { pagerState.currentPage } }
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -328,7 +335,7 @@ fun MainScreen() {
                         ) { page ->
                             val item = navItems[page]
                             when (item) {
-                                BottomNavItem.Home ->
+                                BottomNavItem.Home -> {
                                     HomeScreen(
                                         viewModel = homeViewModel,
                                         onNavigateToApps = {
@@ -340,18 +347,22 @@ fun MainScreen() {
                                             if (idx >= 0) scope.launch { pagerState.animateScrollToPage(idx) }
                                         },
                                     )
+                                }
 
-                                BottomNavItem.History ->
+                                BottomNavItem.History -> {
                                     HistoryScreen(
                                         navController = navController,
                                         extraBottomPadding = if (navBarStyle == NavBarStyle.FLOATING) 96.dp else 12.dp,
                                     )
+                                }
 
-                                BottomNavItem.FmacRules ->
+                                BottomNavItem.FmacRules -> {
                                     RulesScreen()
+                                }
 
-                                BottomNavItem.Settings ->
+                                BottomNavItem.Settings -> {
                                     SettingsScreen(navController)
+                                }
                             }
                         }
 
