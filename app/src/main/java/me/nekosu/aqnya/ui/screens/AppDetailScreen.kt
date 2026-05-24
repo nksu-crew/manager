@@ -19,6 +19,8 @@ import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -189,11 +191,29 @@ fun AppDetailScreen(
     onBack: () -> Unit,
     navController: NavController,
 ) {
-    var allowed by remember { mutableStateOf(config?.allowed ?: false) }
-    var caps by remember { mutableStateOf(config?.caps ?: DEFAULT_CAPS) }
-    var domain by remember { mutableStateOf(config?.selinuxDomain ?: "u:r:nksu:s0") }
-    var ns by remember { mutableStateOf(config?.namespace ?: NksuNamespace.INHERITED) }
-    var showCapsDialog by remember { mutableStateOf(false) }
+    var allowed by rememberSaveable { mutableStateOf(config?.allowed ?: false) }
+
+    val capsSaver = remember {
+        val labelMap = LinuxCap.entries.associateBy { it.label }
+        Saver<Set<LinuxCap>, List<String>>(
+            save = { it.map { cap -> cap.label } },
+            restore = { it.mapNotNull { label -> labelMap[label] }.toSet() },
+        )
+    }
+    var caps by rememberSaveable(stateSaver = capsSaver) { mutableStateOf(config?.caps ?: DEFAULT_CAPS) }
+
+    var domain by rememberSaveable { mutableStateOf(config?.selinuxDomain ?: "u:r:nksu:s0") }
+
+    val nsSaver = remember {
+        val valueMap = NksuNamespace.entries.associateBy { it.value }
+        Saver<NksuNamespace, Int>(
+            save = { it.value },
+            restore = { valueMap[it] ?: NksuNamespace.INHERITED },
+        )
+    }
+    var ns by rememberSaveable(stateSaver = nsSaver) { mutableStateOf(config?.namespace ?: NksuNamespace.INHERITED) }
+
+    var showCapsDialog by rememberSaveable { mutableStateOf(false) }
     val haptic = LocalHapticFeedback.current
 
     if (showCapsDialog) {
@@ -208,6 +228,7 @@ fun AppDetailScreen(
     }
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0.dp),
         topBar = {
             TopAppBar(
                 navigationIcon = {
@@ -261,7 +282,7 @@ fun AppDetailScreen(
                     .padding(innerPadding)
                     .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(2.dp),
-            contentPadding = PaddingValues(top = 12.dp, bottom = 96.dp),
+            contentPadding = PaddingValues(top = 12.dp, bottom = 16.dp),
         ) {
             item {
                 GroupCard {

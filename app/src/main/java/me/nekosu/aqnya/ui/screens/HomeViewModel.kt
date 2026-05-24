@@ -17,10 +17,7 @@ import me.nekosu.aqnya.util.RuleDbHelper
 class HomeViewModel(
     app: Application,
 ) : AndroidViewModel(app) {
-    private val _installStatus =
-        MutableStateFlow(
-            if (ncore.ctl(1) == 0) InstallStatus.INSTALLED else InstallStatus.NOT_INSTALLED,
-        )
+    private val _installStatus = MutableStateFlow(InstallStatus.NOT_INSTALLED)
     val installStatus: StateFlow<InstallStatus> = _installStatus
 
     private val _suCount = MutableStateFlow(0)
@@ -29,20 +26,35 @@ class HomeViewModel(
     private val _ruleCount = MutableStateFlow(0)
     val ruleCount: StateFlow<Int> = _ruleCount
 
+    private val appContext = app.applicationContext
+    private val rootDbHelper = RootDbHelper(appContext)
+    private val ruleDbHelper = RuleDbHelper(appContext)
+
     init {
-        refresh()
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                _installStatus.value =
+                    if (ncore.ctl(1) == 0) InstallStatus.INSTALLED else InstallStatus.NOT_INSTALLED
+            }
+            refresh()
+        }
     }
 
     fun refresh() {
         if (_installStatus.value != InstallStatus.INSTALLED) return
         viewModelScope.launch {
-            withContext(Dispatchers.IO) { ncore.ctl(3) }
             withContext(Dispatchers.IO) {
-                val ctx = getApplication<Application>().applicationContext
-                _suCount.value = RootDbHelper(ctx).getAllowedCount()
-                _ruleCount.value = RuleDbHelper(ctx).getCount()
+                ncore.ctl(3)
+                _suCount.value = rootDbHelper.getAllowedCount()
+                _ruleCount.value = ruleDbHelper.getCount()
             }
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        rootDbHelper.close()
+        ruleDbHelper.close()
     }
 }
 

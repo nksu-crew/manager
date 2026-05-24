@@ -27,7 +27,7 @@ fun MethodChannel.setNavBarCallHandler(
 ) {
     setMethodCallHandler { call, _ ->
         when (call.method) {
-            "onTabSelected" -> onTabSelected(call.arguments as Int)
+            "onTabSelected" -> (call.arguments as? Int)?.let(onTabSelected)
             "requestColors" -> sendColors(scheme)
         }
     }

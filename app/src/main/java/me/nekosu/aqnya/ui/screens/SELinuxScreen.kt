@@ -1,6 +1,7 @@
 package me.nekosu.aqnya.ui.screens
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -39,6 +40,9 @@ import me.nekosu.aqnya.ui.theme.NekosuTheme
 
 private val Context.selinuxDataStore: DataStore<Preferences> by preferencesDataStore("selinux_rules")
 private val KEY_GROUPS = stringPreferencesKey("groups")
+private val KEY_GROUPS_BACKUP = stringPreferencesKey("groups_backup")
+
+private const val TAG = "SelinuxRules"
 
 private val json = Json { ignoreUnknownKeys = true }
 
@@ -70,14 +74,31 @@ data class SelinuxGroup(
 )
 
 private suspend fun Context.saveGroups(groups: List<SelinuxGroup>) {
-    selinuxDataStore.edit { it[KEY_GROUPS] = json.encodeToString(groups) }
+    val raw = json.encodeToString(groups)
+    selinuxDataStore.edit {
+        it[KEY_GROUPS] = raw
+        it[KEY_GROUPS_BACKUP] = raw
+    }
 }
 
 private fun Context.groupsFlow() =
     selinuxDataStore.data.map { prefs ->
-        prefs[KEY_GROUPS]?.let {
-            runCatching { json.decodeFromString<List<SelinuxGroup>>(it) }.getOrNull()
-        } ?: emptyList()
+        val raw = prefs[KEY_GROUPS]
+        if (raw == null) return@map emptyList<SelinuxGroup>()
+        runCatching { json.decodeFromString<List<SelinuxGroup>>(raw) }
+            .getOrElse { e ->
+                Log.e(TAG, "Failed to parse rules, trying backup", e)
+                val backup = prefs[KEY_GROUPS_BACKUP]
+                if (backup != null) {
+                    runCatching { json.decodeFromString<List<SelinuxGroup>>(backup) }
+                        .getOrElse { e2 ->
+                            Log.e(TAG, "Backup parse also failed", e2)
+                            emptyList()
+                        }
+                } else {
+                    emptyList()
+                }
+            }
     }
 
 @OptIn(ExperimentalMaterial3Api::class)

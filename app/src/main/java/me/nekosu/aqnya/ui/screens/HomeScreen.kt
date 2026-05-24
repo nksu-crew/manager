@@ -156,7 +156,14 @@ fun HomeScreen(
     val suCount by viewModel.suCount.collectAsState()
     val ruleCount by viewModel.ruleCount.collectAsState()
 
-    LaunchedEffect(Unit) { viewModel.refresh() }
+    LaunchedEffect(Unit) {
+        viewModel.installStatus.collect { status ->
+            if (status == InstallStatus.INSTALLED) {
+                viewModel.refresh()
+                return@collect
+            }
+        }
+    }
 
     HomeScreenContent(
         installStatus = installStatus,
@@ -176,8 +183,10 @@ fun HomeScreen(
         },
     )
 
-    if (showInstallSheet) {
-        ncore.helloLog()
+    LaunchedEffect(showInstallSheet) {
+        if (showInstallSheet) {
+            ncore.helloLog()
+        }
     }
 }
 

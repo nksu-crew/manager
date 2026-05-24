@@ -12,11 +12,13 @@ object LogUtils {
     fun exportLogs(context: Context) {
         val logFile = File(context.cacheDir, "logcat.log")
         try {
-            Runtime
-                .getRuntime()
-                .exec(
+            val process =
+                Runtime.getRuntime().exec(
                     arrayOf("logcat", "-d", "-v", "threadtime", "-f", logFile.absolutePath),
-                ).waitFor()
+                )
+            process.inputStream.bufferedReader().use { it.readText() }
+            process.errorStream.bufferedReader().use { it.readText() }
+            process.waitFor()
         } catch (e: Exception) {
             Toast.makeText(context, "导出失败: ${e.message}", Toast.LENGTH_SHORT).show()
             return

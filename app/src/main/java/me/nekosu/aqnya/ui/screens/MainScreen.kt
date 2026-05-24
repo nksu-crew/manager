@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -59,6 +60,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -73,6 +75,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import me.nekosu.aqnya.KeyUtils
 import me.nekosu.aqnya.R
@@ -261,6 +264,12 @@ fun MainScreen() {
     val currentRoute = navBackStackEntry?.destination?.route
     val showBottomBar = currentRoute == "main"
 
+    val bottomNavAlpha by animateFloatAsState(
+        targetValue = if (showBottomBar) 1f else 0f,
+        animationSpec = tween(durationMillis = if (showBottomBar) 200 else 150),
+        label = "bottomNavAlpha"
+    )
+
     var navBarVisible by remember { mutableStateOf(true) }
     val nestedScrollConnection =
         remember {
@@ -277,6 +286,13 @@ fun MainScreen() {
         }
 
     LaunchedEffect(currentRoute) { navBarVisible = true }
+
+    LaunchedEffect(currentRoute) {
+        if (currentRoute == "main") {
+            delay(300)
+            homeViewModel.refresh()
+        }
+    }
 
     LaunchedEffect(Unit) {
         if (MiuiPermissionUtils.isSupportedOnThisDevice(context) &&
@@ -297,11 +313,12 @@ fun MainScreen() {
 
     Scaffold(
         bottomBar = {
-            if (showBottomBar && navBarStyle == NavBarStyle.NORMAL) {
-                AnimatedVisibility(
-                    visible = true,
-                    enter = fadeIn(tween(200)) + slideInVertically { it },
-                    exit = fadeOut(tween(150)) + slideOutVertically { it },
+            if (navBarStyle == NavBarStyle.NORMAL) {
+                Box(
+                    modifier = Modifier.graphicsLayer {
+                        alpha = bottomNavAlpha
+                        translationY = (1f - bottomNavAlpha) * size.height
+                    }
                 ) {
                     NormalBottomNavigationBar(navItems, currentPage) { index ->
                         scope.launch { pagerState.animateScrollToPage(index) }
@@ -422,7 +439,11 @@ fun MainScreen() {
                 }
 
                 composable("app_detail/{packageName}") { backStackEntry ->
-                    val pkg = backStackEntry.arguments?.getString("packageName")!!
+                    val pkg = backStackEntry.arguments?.getString("packageName")
+                    if (pkg == null) {
+                        LaunchedEffect(Unit) { navController.popBackStack() }
+                        return@composable
+                    }
                     val appViewModel: AppViewModel = viewModel(factory = AppViewModelFactory(context.applicationContext))
 
                     val app = appViewModel.allApps.find { it.packageName == pkg }

@@ -139,9 +139,10 @@ fun rememberPermissionState(
         ) { granted ->
             state.isGranted = granted
             if (!granted) {
+                val activity = context as? Activity
                 state.isPermanentlyDenied =
                     !PermissionUtils.isGranted(context, permission) &&
-                    !(context as? Activity)?.shouldShowRequestPermissionRationale(permission.manifest)!!
+                    activity?.shouldShowRequestPermissionRationale(permission.manifest) == false
             }
             onResult(granted)
         }

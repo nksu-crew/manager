@@ -268,7 +268,7 @@ private fun EdgeToEdgeSystemBars(
     navigationBarScrim: Color = Color.Transparent,
 ) {
     val context = LocalContext.current
-    val activity = context as ComponentActivity
+    val activity = context as? ComponentActivity ?: return
 
     SideEffect {
         activity.enableEdgeToEdge(

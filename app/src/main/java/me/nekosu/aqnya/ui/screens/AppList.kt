@@ -46,6 +46,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
@@ -263,34 +264,38 @@ class AppViewModel(
             }
         updateFilteredApps()
 
+        dbHelper.setAllowed(app.packageName, config.allowed)
+
         viewModelScope.launch(Dispatchers.IO) {
-            dbHelper.setAllowed(app.packageName, config.allowed)
+            try {
+                if (config.allowed) {
+                    val capsJson =
+                        json.encodeToString(
+                            SetSerializer(String.serializer()),
+                            config.caps.map { it.label }.toSet(),
+                        )
+                    prefs
+                        .edit()
+                        .putString("caps_${app.packageName}", capsJson)
+                        .putString("domain_${app.packageName}", config.selinuxDomain)
+                        .putInt("ns_${app.packageName}", config.namespace.value)
+                        .apply()
 
-            if (config.allowed) {
-                val capsJson =
-                    json.encodeToString(
-                        SetSerializer(String.serializer()),
-                        config.caps.map { it.label }.toSet(),
-                    )
-                prefs
-                    .edit()
-                    .putString("caps_${app.packageName}", capsJson)
-                    .putString("domain_${app.packageName}", config.selinuxDomain)
-                    .putInt("ns_${app.packageName}", config.namespace.value)
-                    .apply()
-
-                ncore.adduid(app.uid)
-                val capsBits = config.caps.fold(0L) { acc, cap -> acc or (1L shl cap.value) }
-                ncore.setProfile(app.uid, capsBits, config.selinuxDomain, config.namespace.value)
-            } else {
-                prefs
-                    .edit()
-                    .remove("caps_${app.packageName}")
-                    .remove("domain_${app.packageName}")
-                    .remove("ns_${app.packageName}")
-                    .apply()
-                ncore.delCap(app.uid)
-                ncore.deluid(app.uid)
+                    ncore.adduid(app.uid)
+                    val capsBits = config.caps.fold(0L) { acc, cap -> acc or (1L shl cap.value) }
+                    ncore.setProfile(app.uid, capsBits, config.selinuxDomain, config.namespace.value)
+                } else {
+                    prefs
+                        .edit()
+                        .remove("caps_${app.packageName}")
+                        .remove("domain_${app.packageName}")
+                        .remove("ns_${app.packageName}")
+                        .apply()
+                    ncore.delCap(app.uid)
+                    ncore.deluid(app.uid)
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("AppViewModel", "JNI call failed, will recover on next launch", e)
             }
         }
     }
@@ -356,6 +361,7 @@ fun HistoryScreen(
         } else {
             val prevEntry = navController.previousBackStackEntry
             val pkg = prevEntry?.arguments?.getString("packageName") ?: return@LaunchedEffect
+            delay(150)
             viewModel.refreshAppConfig(pkg)
         }
     }
@@ -671,7 +677,12 @@ fun AppTag(
     }
 }
 
-private val iconCache = LruCache<String, ImageBitmap>(200)
+private val iconCache = object : LruCache<String, ImageBitmap>(16 * 1024 * 1024) {
+    override fun sizeOf(
+        key: String,
+        value: ImageBitmap,
+    ): Int = value.width * value.height * 4
+}
 
 @Composable
 fun AppIcon(

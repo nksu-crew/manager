@@ -29,7 +29,7 @@ class _NavBarAppState extends State<NavBarApp> {
     _channel.setMethodCallHandler((call) async {
       switch (call.method) {
         case 'setIndex':
-          if (mounted) {
+          if (mounted && call.arguments is int) {
             setState(() {
               int newIndex = call.arguments as int;
               int maxIndex = _showRules ? 3 : 2;
@@ -37,10 +37,14 @@ class _NavBarAppState extends State<NavBarApp> {
             });
           }
         case 'setColors':
-          final m = Map<String, int>.from(call.arguments as Map);
-          if (mounted) setState(() => _dynamicScheme = _buildScheme(m));
+          if (call.arguments is Map) {
+            final m = Map<String, int>.from(call.arguments as Map);
+            if (mounted) setState(() => _dynamicScheme = _buildScheme(m));
+          }
         case 'setNavBarVisible':
-          if (mounted) setState(() => _navBarVisible = call.arguments as bool);
+          if (mounted && call.arguments is bool) {
+            setState(() => _navBarVisible = call.arguments as bool);
+          }
       }
     });
     _channel.invokeMethod('requestColors');
@@ -62,7 +66,7 @@ class _NavBarAppState extends State<NavBarApp> {
   }
 
   ColorScheme _buildScheme(Map<String, int> m) {
-    Color c(String k) => Color(m[k]!);
+    Color c(String k) => Color(m[k] ?? 0xFF000000);
     final base = ColorScheme.fromSeed(
       seedColor: c('secondaryContainer'),
       brightness: WidgetsBinding.instance.platformDispatcher.platformBrightness,
