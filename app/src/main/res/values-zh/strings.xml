@@ -43,7 +43,7 @@
     <string name="navbar_style_normal">普通</string>
     <string name="navbar_style_flutter">Flutter 样式</string>
     <string name="pager_anim_title">页面切换动画</string>
-    <string name="pager_anim_default">默认</string>
+    <string name="pager_anim_default">快速</string>
     <string name="pager_anim_spring">弹簧物理</string>
 
     <!-- 底部导航栏 -->
