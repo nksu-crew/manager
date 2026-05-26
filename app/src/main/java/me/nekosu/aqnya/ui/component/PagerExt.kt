@@ -39,8 +39,8 @@ suspend fun PagerState.springScrollToPage(target: Int) {
                 }
             }
         }
-    }
-    if (target in 0 until pageCount) {
-        scrollToPage(target)
+        if (target in 0 until pageCount) {
+            scrollToPage(target)
+        }
     }
 }
