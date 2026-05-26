@@ -58,6 +58,15 @@ object DebugPreferences {
         getPrefs(context).edit().putBoolean("${PREFIX}amoled_mode", value).apply()
     }
 
+    fun pagerAnimationStyleFlow(context: Context): Flow<Int> = context.prefsFlow { getInt("${PREFIX}pager_anim_style", 0) }
+
+    fun setPagerAnimationStyle(
+        context: Context,
+        value: Int,
+    ) {
+        getPrefs(context).edit().putInt("${PREFIX}pager_anim_style", value).apply()
+    }
+
     private fun <T> Context.prefsFlow(getValue: SharedPreferences.() -> T): Flow<T> =
         callbackFlow {
             val prefs = getPrefs(this@prefsFlow)

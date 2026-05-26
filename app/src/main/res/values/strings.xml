@@ -44,6 +44,9 @@
     <string name="navbar_style_floating">Floating</string>
     <string name="navbar_style_normal">Normal</string>
     <string name="navbar_style_flutter">Flutter</string>
+    <string name="pager_anim_title">Page Animation</string>
+    <string name="pager_anim_default">Default</string>
+    <string name="pager_anim_spring">Spring Physics</string>
 
     <!-- 底部导航栏 -->
     <string name="nav_home">Home</string>

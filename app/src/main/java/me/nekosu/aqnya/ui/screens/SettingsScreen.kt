@@ -76,6 +76,7 @@ import me.nekosu.aqnya.util.DebugPreferences
 import me.nekosu.aqnya.util.LocaleHelper
 import me.nekosu.aqnya.util.LogUtils
 import me.nekosu.aqnya.util.NavBarStyle
+import me.nekosu.aqnya.util.PagerAnimationStyle
 
 enum class ThemeMode(
     @param:StringRes val titleRes: Int,
@@ -118,6 +119,9 @@ fun SettingsScreen(navController: NavController) {
 
     val navBarStyleValue by DebugPreferences.navBarStyleFlow(mContext).collectAsState(initial = 2)
     val currentNavBarStyle = NavBarStyle.fromValue(navBarStyleValue)
+
+    val pagerAnimValue by DebugPreferences.pagerAnimationStyleFlow(mContext).collectAsState(initial = 0)
+    val currentPagerAnimStyle = PagerAnimationStyle.fromValue(pagerAnimValue)
 
     val themeColorValue by DebugPreferences.themeColorFlow(mContext).collectAsState(initial = 0)
     val currentThemeColor = ThemeColor.fromValue(themeColorValue)
@@ -177,6 +181,7 @@ fun SettingsScreen(navController: NavController) {
             AppearanceSection(
                 currentThemeMode = currentThemeMode,
                 currentNavBarStyle = currentNavBarStyle,
+                currentPagerAnimStyle = currentPagerAnimStyle,
                 currentThemeColor = currentThemeColor,
                 amoledEnabled = amoledEnabled,
                 onThemeChange = { mode ->
@@ -184,6 +189,9 @@ fun SettingsScreen(navController: NavController) {
                 },
                 onNavBarStyleChange = { style ->
                     scope.launch { DebugPreferences.setNavBarStyle(mContext, style.value) }
+                },
+                onPagerAnimationChange = { style ->
+                    scope.launch { DebugPreferences.setPagerAnimationStyle(mContext, style.value) }
                 },
                 onThemeColorChange = { color ->
                     scope.launch { DebugPreferences.setThemeColor(mContext, color.value) }
@@ -282,20 +290,23 @@ private fun LanguageSection(
 private fun AppearanceSection(
     currentThemeMode: ThemeMode,
     currentNavBarStyle: NavBarStyle,
+    currentPagerAnimStyle: PagerAnimationStyle,
     currentThemeColor: ThemeColor,
     amoledEnabled: Boolean,
     onThemeChange: (ThemeMode) -> Unit,
     onNavBarStyleChange: (NavBarStyle) -> Unit,
+    onPagerAnimationChange: (PagerAnimationStyle) -> Unit,
     onThemeColorChange: (ThemeColor) -> Unit,
     onAmoledChange: (Boolean) -> Unit,
 ) {
     var themeMenuExpanded by remember { mutableStateOf(false) }
     var themeColorMenuExpanded by remember { mutableStateOf(false) }
     var navBarStyleMenuExpanded by remember { mutableStateOf(false) }
+    var pagerAnimMenuExpanded by remember { mutableStateOf(false) }
 
     CardGroup {
         // 主题模式
-        CardItem(index = 0, total = 4) {
+        CardItem(index = 0, total = 5) {
             ListItem(
                 modifier = Modifier.fillMaxWidth().clickable { themeMenuExpanded = true },
                 colors = ListItemDefaults.colors(containerColor = Color.Transparent),
@@ -341,7 +352,7 @@ private fun AppearanceSection(
         }
 
         // 主题色
-        CardItem(index = 1, total = 4) {
+        CardItem(index = 1, total = 5) {
             ListItem(
                 modifier = Modifier.fillMaxWidth().clickable { themeColorMenuExpanded = true },
                 colors = ListItemDefaults.colors(containerColor = Color.Transparent),
@@ -392,7 +403,7 @@ private fun AppearanceSection(
         }
 
         // AMOLED 纯黑
-        CardItem(index = 2, total = 4) {
+        CardItem(index = 2, total = 5) {
             ListRow(
                 modifier = Modifier.toggleable(value = amoledEnabled, role = Role.Switch, onValueChange = onAmoledChange),
                 icon = { Icon(Icons.Outlined.PhoneAndroid, contentDescription = null) },
@@ -409,7 +420,7 @@ private fun AppearanceSection(
         }
 
         // 导航栏样式
-        CardItem(index = 3, total = 4) {
+        CardItem(index = 3, total = 5) {
             ListItem(
                 modifier = Modifier.fillMaxWidth().clickable { navBarStyleMenuExpanded = true },
                 colors = ListItemDefaults.colors(containerColor = Color.Transparent),
@@ -445,6 +456,52 @@ private fun AppearanceSection(
                                     },
                                     trailingIcon = {
                                         if (currentNavBarStyle == style) {
+                                            Icon(Icons.Default.Check, null, Modifier.size(20.dp))
+                                        }
+                                    },
+                                )
+                            }
+                        }
+                    }
+                },
+            )
+        }
+
+        // 页面切换动画
+        CardItem(index = 4, total = 5) {
+            ListItem(
+                modifier = Modifier.fillMaxWidth().clickable { pagerAnimMenuExpanded = true },
+                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                leadingContent = { Icon(Icons.Outlined.Science, contentDescription = null) },
+                headlineContent = {
+                    Text(
+                        stringResource(R.string.pager_anim_title),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                },
+                supportingContent = { Text(stringResource(currentPagerAnimStyle.titleRes)) },
+                trailingContent = {
+                    Box {
+                        DropdownMenu(
+                            expanded = pagerAnimMenuExpanded,
+                            onDismissRequest = { pagerAnimMenuExpanded = false },
+                            shape = RoundedCornerShape(16.dp),
+                        ) {
+                            PagerAnimationStyle.entries.forEach { style ->
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            stringResource(style.titleRes),
+                                            fontWeight = if (currentPagerAnimStyle == style) FontWeight.SemiBold else FontWeight.Normal,
+                                        )
+                                    },
+                                    onClick = {
+                                        pagerAnimMenuExpanded = false
+                                        onPagerAnimationChange(style)
+                                    },
+                                    trailingIcon = {
+                                        if (currentPagerAnimStyle == style) {
                                             Icon(Icons.Default.Check, null, Modifier.size(20.dp))
                                         }
                                     },
