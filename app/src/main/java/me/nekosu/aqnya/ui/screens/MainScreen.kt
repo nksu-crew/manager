@@ -80,11 +80,11 @@ import kotlinx.coroutines.launch
 import me.nekosu.aqnya.KeyUtils
 import me.nekosu.aqnya.R
 import me.nekosu.aqnya.ncore
+import me.nekosu.aqnya.ui.component.springScrollToPage
 import me.nekosu.aqnya.ui.navbar.FlutterNavBar
 import me.nekosu.aqnya.util.AppPermission
 import me.nekosu.aqnya.util.BottomNavItem
 import me.nekosu.aqnya.util.CheckUpdate
-import me.nekosu.aqnya.ui.component.springScrollToPage
 import me.nekosu.aqnya.util.DebugPreferences
 import me.nekosu.aqnya.util.MiuiPermissionUtils
 import me.nekosu.aqnya.util.NavBarStyle
@@ -369,21 +369,25 @@ fun MainScreen() {
                                         viewModel = homeViewModel,
                                         onNavigateToApps = {
                                             val idx = navItems.indexOfFirst { it is BottomNavItem.History }
-                                            if (idx >= 0) scope.launch {
-                                                if (pagerAnimStyle == PagerAnimationStyle.SPRING) {
-                                                    pagerState.springScrollToPage(idx)
-                                                } else {
-                                                    pagerState.animateScrollToPage(idx)
+                                            if (idx >= 0) {
+                                                scope.launch {
+                                                    if (pagerAnimStyle == PagerAnimationStyle.SPRING) {
+                                                        pagerState.springScrollToPage(idx)
+                                                    } else {
+                                                        pagerState.animateScrollToPage(idx)
+                                                    }
                                                 }
                                             }
                                         },
                                         onNavigateToRules = {
                                             val idx = navItems.indexOfFirst { it is BottomNavItem.FmacRules }
-                                            if (idx >= 0) scope.launch {
-                                                if (pagerAnimStyle == PagerAnimationStyle.SPRING) {
-                                                    pagerState.springScrollToPage(idx)
-                                                } else {
-                                                    pagerState.animateScrollToPage(idx)
+                                            if (idx >= 0) {
+                                                scope.launch {
+                                                    if (pagerAnimStyle == PagerAnimationStyle.SPRING) {
+                                                        pagerState.springScrollToPage(idx)
+                                                    } else {
+                                                        pagerState.animateScrollToPage(idx)
+                                                    }
                                                 }
                                             }
                                         },
@@ -415,13 +419,13 @@ fun MainScreen() {
                                 modifier = Modifier.align(Alignment.BottomCenter),
                             ) {
                                 FloatingBottomNavigationBar(navItems, currentPage) { index ->
-                        scope.launch {
-                            if (pagerAnimStyle == PagerAnimationStyle.SPRING) {
-                                pagerState.springScrollToPage(index)
-                            } else {
-                                pagerState.animateScrollToPage(index)
-                            }
-                        }
+                                    scope.launch {
+                                        if (pagerAnimStyle == PagerAnimationStyle.SPRING) {
+                                            pagerState.springScrollToPage(index)
+                                        } else {
+                                            pagerState.animateScrollToPage(index)
+                                        }
+                                    }
                                 }
                             }
                         } else if (navBarStyle == NavBarStyle.FLUTTER) {
@@ -436,11 +440,13 @@ fun MainScreen() {
                                     selectedIndex = currentPage,
                                     navBarVisible = navBarVisible,
                                     onTabSelected = { i ->
-                                        if (i < navItems.size) scope.launch {
-                                            if (pagerAnimStyle == PagerAnimationStyle.SPRING) {
-                                                pagerState.springScrollToPage(i)
-                                            } else {
-                                                pagerState.animateScrollToPage(i)
+                                        if (i < navItems.size) {
+                                            scope.launch {
+                                                if (pagerAnimStyle == PagerAnimationStyle.SPRING) {
+                                                    pagerState.springScrollToPage(i)
+                                                } else {
+                                                    pagerState.animateScrollToPage(i)
+                                                }
                                             }
                                         }
                                     },
