@@ -2,20 +2,27 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     kotlin("plugin.serialization") version embeddedKotlinVersion
+    alias(libs.plugins.ktlint)
 }
-
 
 fun gitCommitCount(): Int =
     ProcessBuilder("git", "rev-list", "--count", "HEAD")
         .directory(rootDir)
         .start()
-        .inputStream.bufferedReader().readText().trim().toInt()
+        .inputStream
+        .bufferedReader()
+        .readText()
+        .trim()
+        .toInt()
 
 fun gitCommitHash(): String =
     ProcessBuilder("git", "rev-parse", "--short", "HEAD")
         .directory(rootDir)
         .start()
-        .inputStream.bufferedReader().readText().trim()
+        .inputStream
+        .bufferedReader()
+        .readText()
+        .trim()
 
 android {
     namespace = "me.nekosu.aqnya"
@@ -42,7 +49,7 @@ android {
 
     signingConfigs {
         create("debugKey") {
-            storeFile = file("${rootDir}/debug.keystore")
+            storeFile = file("$rootDir/debug.keystore")
             storePassword = "android"
             keyAlias = "androiddebugkey"
             keyPassword = "android"
@@ -83,18 +90,6 @@ android {
 // ktlint 代码格式化（通过 Maven Central JAR，跨平台）
 // ============================================================
 
-val ktlintVersion = "1.8.0"
-val ktlint by configurations.creating
-
-val ktlintFormat by tasks.registering(JavaExec::class) {
-    group = "ktlint"
-    description = "Format Kotlin source files with ktlint"
-    classpath = ktlint
-    mainClass.set("com.pinterest.ktlint.Main")
-    args("-F", "app/src/**/*.kt")
-    isIgnoreExitValue = true
-}
-
 // ============================================================
 // libncore.so 存在性检查
 // 本地开发时若无 Go 环境，可提前放置预编译的 .so 文件
@@ -109,7 +104,8 @@ val checkNcoreLib by tasks.registering {
     doLast {
         val libFile = file(ncoreLibPath)
         if (!libFile.exists()) {
-                throw GradleException("""
+            throw GradleException(
+                """
                 |============================================================
                 |libncore.so not found!
                 |
@@ -127,7 +123,8 @@ val checkNcoreLib by tasks.registering {
                 |       go build -buildmode=c-shared -o libncore.so .
                     |     cp libncore.so ${libFile.absolutePath}
                 |============================================================
-            """.trimMargin())
+                """.trimMargin(),
+            )
         }
     }
 }
@@ -135,7 +132,6 @@ val checkNcoreLib by tasks.registering {
 tasks.named("preBuild") {
     dependsOn(checkNcoreLib)
 }
-
 
 dependencies {
     implementation(libs.androidx.core.ktx)

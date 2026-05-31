@@ -1,6 +1,5 @@
 package me.nekosu.aqnya
 
-import android.content.Context
 import android.util.Log
 
 object ncore_loader {
