@@ -17,7 +17,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -33,9 +33,7 @@ jobs:
 
       - name: Run ktlintFormat
         run: |
-           curl -sSLO https://github.com/pinterest/ktlint/releases/download/1.8.0/ktlint
-           chmod +x ktlint
-           ./ktlint -F "app/src/**/*.kt" ||true
+           ./gradlew ktlintFormat
 
       - name: Check for changes
         id: git-check
