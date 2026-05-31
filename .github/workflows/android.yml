@@ -2,13 +2,6 @@ name: Android CI
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ "main" ]
-    paths:
-      - "app/src/**/*.kt"
-      - "flutter/lib/**/*.dart"
-      - "build.gradle.kts"
-      - "gradle/libs.versions.toml"
   pull_request:
     branches: [ "main" ]
     paths:

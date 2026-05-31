@@ -2,12 +2,6 @@ name: Debug build
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ "main" ]
-    paths:
-      - "app/src/**/*.kt"
-      - "build.gradle.kts"
-      - "gradle/libs.versions.toml"
   pull_request:
     branches: [ "main" ]
     paths:
