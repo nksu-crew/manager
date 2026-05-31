@@ -24,16 +24,6 @@ fun gitCommitHash(): String =
         .readText()
         .trim()
 
-ktlint {
-    android.set(true)
-    outputToConsole.set(true)
-    filter {
-        include("**/*.kt")
-        exclude("src/test/**/*.kt")
-        exclude("src/androidTest/**/*.kt")
-    }
-}
-
 android {
     namespace = "me.nekosu.aqnya"
     compileSdk {
