@@ -1,14 +1,8 @@
 name: Kotlin Lint Format
 
 on:
-  push:
-    branches: [ "main", "master" ]
-    pull_request:
-      - "app/src/**/*.kt"
-      - "build.gradle.kts"
-      - "gradle/libs.versions.toml"
   pull_request:
-    branches: [ "main", "master" ]
+    branches: [ "main"]
     paths:
       - "app/src/**/*.kt"
       - "build.gradle.kts"
