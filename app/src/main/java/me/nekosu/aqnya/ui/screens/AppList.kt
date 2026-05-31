@@ -145,11 +145,12 @@ class AppViewModel(
                             FilterMode.SYSTEM -> app.isSystem
                             FilterMode.USER -> !app.isSystem
                         }
-                    passFilter && (
-                        q.isEmpty() ||
-                            app.name.lowercase().contains(q) ||
-                            app.packageName.contains(q, ignoreCase = true)
-                    )
+                    passFilter &&
+                        (
+                            q.isEmpty() ||
+                                app.name.lowercase().contains(q) ||
+                                app.packageName.contains(q, ignoreCase = true)
+                        )
                 }.sortedWith(compareBy({ app -> if (app.packageName in configs) 0 else 1 }, { it.name.lowercase() }))
     }
 

@@ -5,7 +5,6 @@ import android.content.SharedPreferences
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.onStart
 
 object DebugPreferences {
     private const val PREF_NAME = "FlutterSharedPreferences"

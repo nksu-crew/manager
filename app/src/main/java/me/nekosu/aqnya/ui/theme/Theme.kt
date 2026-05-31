@@ -1,6 +1,5 @@
 package me.nekosu.aqnya.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
