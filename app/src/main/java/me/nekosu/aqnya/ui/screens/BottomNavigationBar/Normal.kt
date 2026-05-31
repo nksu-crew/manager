@@ -1,5 +1,7 @@
 package me.nekosu.aqnya.ui.screens
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -17,30 +19,33 @@ fun NormalBottomNavigationBar(
     selectedIndex: Int,
     onTabClick: (Int) -> Unit,
 ) {
-    NavigationBar(
-        containerColor = MaterialTheme.colorScheme.surfaceContainer,
-    ) {
-        items.forEachIndexed { index, item ->
-            val selected = index == selectedIndex
-            NavigationBarItem(
-                selected = selected,
-                onClick = { onTabClick(index) },
-                colors =
-                    NavigationBarItemDefaults.colors(
-                        selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                        selectedTextColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        indicatorColor = MaterialTheme.colorScheme.primaryContainer,
-                    ),
-                icon = {
-                    Icon(
-                        imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
-                        contentDescription = stringResource(item.titleRes),
-                    )
-                },
-                label = { Text(stringResource(item.titleRes)) },
-            )
+    Column {
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+        NavigationBar(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        ) {
+            items.forEachIndexed { index, item ->
+                val selected = index == selectedIndex
+                NavigationBarItem(
+                    selected = selected,
+                    onClick = { onTabClick(index) },
+                    colors =
+                        NavigationBarItemDefaults.colors(
+                            selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            selectedTextColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                        ),
+                    icon = {
+                        Icon(
+                            imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
+                            contentDescription = stringResource(item.titleRes),
+                        )
+                    },
+                    label = { Text(stringResource(item.titleRes)) },
+                )
+            }
         }
     }
 }
