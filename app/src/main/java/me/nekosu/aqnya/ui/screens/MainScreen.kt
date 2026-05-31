@@ -91,7 +91,16 @@ fun BottomNavigationBar(
             NormalBottomNavigationBar(items, selectedIndex, onTabClick)
         }
 
-        NavBarStyle.FLUTTER -> {}
+        NavBarStyle.FLUTTER -> {
+            FlutterNavBar(
+                modifier = Modifier.fillMaxWidth(),
+                selectedIndex = selectedIndex,
+                navBarVisible = true,
+                onTabSelected = { i ->
+                    if (i < items.size) onTabClick(i)
+                },
+            )
+        }
     }
 }
 
@@ -185,15 +194,20 @@ fun MainScreen() {
                             translationY = (1f - bottomNavAlpha) * size.height
                         },
                 ) {
-                    NormalBottomNavigationBar(navItems, currentPage) { index ->
-                        scope.launch {
-                            if (pagerAnimStyle == PagerAnimationStyle.SPRING) {
-                                pagerState.springScrollToPage(index)
-                            } else {
-                                pagerState.animateScrollToPage(index)
+                    BottomNavigationBar(
+                        items = navItems,
+                        selectedIndex = currentPage,
+                        style = navBarStyle,
+                        onTabClick = { index ->
+                            scope.launch {
+                                if (pagerAnimStyle == PagerAnimationStyle.SPRING) {
+                                    pagerState.springScrollToPage(index)
+                                } else {
+                                    pagerState.animateScrollToPage(index)
+                                }
                             }
-                        }
-                    }
+                        },
+                    )
                 }
             }
         },
@@ -270,42 +284,23 @@ fun MainScreen() {
                             }
                         }
 
-                        if (navBarStyle == NavBarStyle.FLOATING) {
+                        if (navBarStyle != NavBarStyle.NORMAL) {
                             AnimatedVisibility(
                                 visible = navBarVisible,
                                 enter = fadeIn(tween(200)) + slideInVertically { it },
                                 exit = fadeOut(tween(150)) + slideOutVertically { it },
                                 modifier = Modifier.align(Alignment.BottomCenter),
                             ) {
-                                FloatingBottomNavigationBar(navItems, currentPage) { index ->
-                                    scope.launch {
-                                        if (pagerAnimStyle == PagerAnimationStyle.SPRING) {
-                                            pagerState.springScrollToPage(index)
-                                        } else {
-                                            pagerState.animateScrollToPage(index)
-                                        }
-                                    }
-                                }
-                            }
-                        } else if (navBarStyle == NavBarStyle.FLUTTER) {
-                            AnimatedVisibility(
-                                visible = navBarVisible,
-                                enter = fadeIn(tween(200)) + slideInVertically { it },
-                                exit = fadeOut(tween(150)) + slideOutVertically { it },
-                                modifier = Modifier.align(Alignment.BottomCenter),
-                            ) {
-                                FlutterNavBar(
-                                    modifier = Modifier.fillMaxWidth(),
+                                BottomNavigationBar(
+                                    items = navItems,
                                     selectedIndex = currentPage,
-                                    navBarVisible = navBarVisible,
-                                    onTabSelected = { i ->
-                                        if (i < navItems.size) {
-                                            scope.launch {
-                                                if (pagerAnimStyle == PagerAnimationStyle.SPRING) {
-                                                    pagerState.springScrollToPage(i)
-                                                } else {
-                                                    pagerState.animateScrollToPage(i)
-                                                }
+                                    style = navBarStyle,
+                                    onTabClick = { index ->
+                                        scope.launch {
+                                            if (pagerAnimStyle == PagerAnimationStyle.SPRING) {
+                                                pagerState.springScrollToPage(index)
+                                            } else {
+                                                pagerState.animateScrollToPage(index)
                                             }
                                         }
                                     },
@@ -390,7 +385,7 @@ fun MainScreen() {
                 }
             }
 
-            CheckUpdate(owner = "aqnya", repo = "nekosu")
+            CheckUpdate(owner = "nksu-crew", repo = "nekosu")
         }
     }
 }
