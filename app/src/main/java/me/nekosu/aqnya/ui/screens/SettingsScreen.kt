@@ -143,7 +143,6 @@ fun SettingsScreen(navController: NavController) {
                         fontWeight = FontWeight.Black,
                     )
                 },
-                //  scrollBehavior = scrollBehavior,
                 scrollBehavior = scrollBehavior,
                 colors =
                     TopAppBarDefaults.topAppBarColors(
