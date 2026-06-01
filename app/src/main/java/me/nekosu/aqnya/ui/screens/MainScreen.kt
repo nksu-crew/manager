@@ -68,7 +68,6 @@ import me.nekosu.aqnya.ui.component.springScrollToPage
 import me.nekosu.aqnya.ui.navbar.FlutterNavBar
 import me.nekosu.aqnya.util.AppPermission
 import me.nekosu.aqnya.util.BottomNavItem
-import me.nekosu.aqnya.util.CheckUpdate
 import me.nekosu.aqnya.util.DebugPreferences
 import me.nekosu.aqnya.util.MiuiPermissionUtils
 import me.nekosu.aqnya.util.NavBarStyle
@@ -384,8 +383,6 @@ fun MainScreen() {
                     )
                 }
             }
-
-            CheckUpdate(owner = "nksu-crew", repo = "nekosu")
         }
     }
 }
