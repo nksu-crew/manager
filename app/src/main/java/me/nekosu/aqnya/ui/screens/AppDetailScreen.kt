@@ -34,6 +34,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import me.nekosu.aqnya.R
+import me.nekosu.aqnya.ui.component.CardGroup
+import me.nekosu.aqnya.ui.component.CardItem
 import me.nekosu.aqnya.ui.component.ListRow
 
 @Composable
@@ -157,28 +159,6 @@ fun CapsDialog(
     )
 }
 
-@Composable
-private fun GroupCard(content: @Composable ColumnScope.() -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors =
-            CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainer,
-            ),
-    ) {
-        Column(content = content)
-    }
-}
-
-@Composable
-private fun RowDivider() {
-    HorizontalDivider(
-        modifier = Modifier.padding(horizontal = 16.dp),
-        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
-    )
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppDetailScreen(
@@ -210,7 +190,9 @@ fun AppDetailScreen(
                 restore = { valueMap[it] ?: NksuNamespace.INHERITED },
             )
         }
-    var ns by rememberSaveable(stateSaver = nsSaver) { mutableStateOf(config?.namespace ?: NksuNamespace.INHERITED) }
+    var ns by rememberSaveable(stateSaver = nsSaver) {
+        mutableStateOf(config?.namespace ?: NksuNamespace.INHERITED)
+    }
 
     var showCapsDialog by rememberSaveable { mutableStateOf(false) }
     val haptic = LocalHapticFeedback.current
@@ -232,7 +214,10 @@ fun AppDetailScreen(
             TopAppBar(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.cd_back))
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.cd_back),
+                        )
                     }
                 },
                 title = {
@@ -280,80 +265,292 @@ fun AppDetailScreen(
                     .fillMaxSize()
                     .padding(innerPadding)
                     .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(2.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(top = 12.dp, bottom = 16.dp),
         ) {
+            // ── 组 1：应用信息 + Root 开关  ──────────────────────────────────
             item {
-                GroupCard {
-                    Row(
-                        modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(14.dp),
-                    ) {
-                        AppIcon(
-                            packageName = app.packageName,
+                CardGroup {
+                    // 1-0  应用信息头
+                    CardItem(index = 0, total = 2) {
+                        Row(
                             modifier =
                                 Modifier
-                                    .size(52.dp)
-                                    .clip(RoundedCornerShape(12.dp)),
-                        )
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = app.name,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.SemiBold,
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(14.dp),
+                        ) {
+                            AppIcon(
+                                packageName = app.packageName,
+                                modifier =
+                                    Modifier
+                                        .size(52.dp)
+                                        .clip(RoundedCornerShape(12.dp)),
                             )
-                            Text(
-                                text = stringResource(R.string.app_uid_format, app.uid),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                            )
-                        }
-                        if (app.isSystem) {
-                            AppTag(label = stringResource(R.string.app_tag_system), color = MaterialTheme.colorScheme.secondary)
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = app.name,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.SemiBold,
+                                )
+                                Text(
+                                    text = stringResource(R.string.app_uid_format, app.uid),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                                )
+                            }
+                            if (app.isSystem) {
+                                AppTag(
+                                    label = stringResource(R.string.app_tag_system),
+                                    color = MaterialTheme.colorScheme.secondary,
+                                )
+                            }
                         }
                     }
 
-                    RowDivider()
-
-                    ListRow(
-                        modifier =
-                            Modifier
-                                .padding(horizontal = 4.dp)
-                                .toggleable(
-                                    value = allowed,
-                                    role = Role.Switch,
-                                    onValueChange = { value ->
-                                        haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                                        allowed = value
-                                        if (!value) {
-                                            caps = emptySet()
-                                            domain = "u:r:nksu:s0"
-                                            ns = NksuNamespace.INHERITED
-                                        } else if (caps.isEmpty()) {
-                                            caps = DEFAULT_CAPS
-                                        }
+                    // 1-1  Root 开关
+                    CardItem(index = 1, total = 2) {
+                        ListRow(
+                            modifier =
+                                Modifier
+                                    .padding(horizontal = 4.dp)
+                                    .toggleable(
+                                        value = allowed,
+                                        role = Role.Switch,
+                                        onValueChange = { value ->
+                                            haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                                            allowed = value
+                                            if (!value) {
+                                                caps = emptySet()
+                                                domain = "u:r:nksu:s0"
+                                                ns = NksuNamespace.INHERITED
+                                            } else if (caps.isEmpty()) {
+                                                caps = DEFAULT_CAPS
+                                            }
+                                        },
+                                    ),
+                            icon = {
+                                Icon(
+                                    if (allowed) Icons.Default.LockOpen else Icons.Default.Lock,
+                                    contentDescription = null,
+                                )
+                            },
+                            headline = {
+                                Text(
+                                    stringResource(R.string.app_allow_root),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.SemiBold,
+                                )
+                            },
+                            supporting = {
+                                Text(
+                                    if (allowed) {
+                                        stringResource(R.string.app_status_granted)
+                                    } else {
+                                        stringResource(R.string.app_status_denied)
                                     },
-                                ),
-                        icon = { Icon(if (allowed) Icons.Default.LockOpen else Icons.Default.Lock, contentDescription = null) },
-                        headline = {
+                                )
+                            },
+                            trailing = { Switch(checked = allowed, onCheckedChange = null) },
+                        )
+                    }
+                }
+            }
+
+            // ── 组 2：Capabilities + SELinux Domain ──────────────────────────
+            item {
+                CardGroup {
+                    // 2-0  Capabilities 行
+                    CardItem(index = 0, total = 2) {
+                        Row(
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .clickable(
+                                        enabled = allowed,
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null,
+                                    ) {
+                                        haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                                        showCapsDialog = true
+                                    }.padding(horizontal = 16.dp, vertical = 14.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Tune,
+                                contentDescription = null,
+                                tint =
+                                    if (allowed) {
+                                        MaterialTheme.colorScheme.primary
+                                    } else {
+                                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                                    },
+                            )
+                            Spacer(Modifier.width(14.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = stringResource(R.string.app_caps_selected, caps.size, LinuxCap.entries.size),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color =
+                                        if (allowed) {
+                                            MaterialTheme.colorScheme.onSurface
+                                        } else {
+                                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                                        },
+                                )
+                                Text(
+                                    text =
+                                        when {
+                                            !allowed -> stringResource(R.string.app_enable_root_first)
+                                            caps.isEmpty() -> stringResource(R.string.app_no_capabilities)
+                                            else ->
+                                                caps.take(4).joinToString(" · ") { it.label } +
+                                                    if (caps.size > 4) " +${caps.size - 4}" else ""
+                                        },
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color =
+                                        if (allowed) {
+                                            MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                                        } else {
+                                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+                                        },
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                            }
+                            if (allowed) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                                    modifier = Modifier.size(20.dp),
+                                )
+                            }
+                        }
+                    }
+
+                    // 2-1  SELinux Domain
+                    CardItem(index = 1, total = 2) {
+                        Column(
+                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+                        ) {
                             Text(
-                                stringResource(R.string.app_allow_root),
-                                style = MaterialTheme.typography.titleMedium,
+                                text = stringResource(R.string.app_selinux_domain),
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                                modifier = Modifier.padding(bottom = 6.dp, start = 2.dp),
+                            )
+                            OutlinedTextField(
+                                value = domain,
+                                onValueChange = { domain = it },
+                                label = {
+                                    Text(
+                                        "domain",
+                                        fontFamily = FontFamily.Monospace,
+                                        fontSize = 12.sp,
+                                    )
+                                },
+                                singleLine = true,
+                                textStyle =
+                                    MaterialTheme.typography.bodySmall.copy(
+                                        fontFamily = FontFamily.Monospace,
+                                    ),
+                                modifier = Modifier.fillMaxWidth(),
+                                enabled = allowed,
+                                trailingIcon = {
+                                    if (domain != "u:r:nksu:s0") {
+                                        IconButton(
+                                            onClick = {
+                                                haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                                                domain = "u:r:nksu:s0"
+                                            },
+                                        ) {
+                                            Icon(
+                                                Icons.Default.Refresh,
+                                                contentDescription = stringResource(R.string.cd_reset),
+                                                modifier = Modifier.size(18.dp),
+                                            )
+                                        }
+                                    }
+                                },
+                                shape = RoundedCornerShape(12.dp),
+                            )
+                            if (!allowed) {
+                                Spacer(Modifier.height(6.dp))
+                                Text(
+                                    stringResource(R.string.app_enable_root_first),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            // ── 组 3：Mount Namespace ────────────────────────────────────────
+            item {
+                var showNsDialog by remember { mutableStateOf(false) }
+
+                if (showNsDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showNsDialog = false },
+                        title = {
+                            Text(
+                                stringResource(R.string.app_mount_namespace),
+                                style = MaterialTheme.typography.labelMedium,
                                 fontWeight = FontWeight.SemiBold,
                             )
                         },
-                        supporting = {
-                            Text(
-                                if (allowed) stringResource(R.string.app_status_granted) else stringResource(R.string.app_status_denied),
-                            )
+                        text = {
+                            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                NksuNamespace.entries.forEach { option ->
+                                    Row(
+                                        modifier =
+                                            Modifier
+                                                .fillMaxWidth()
+                                                .clip(RoundedCornerShape(10.dp))
+                                                .clickable(
+                                                    interactionSource = remember { MutableInteractionSource() },
+                                                    indication = null,
+                                                ) {
+                                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                                    ns = option
+                                                    showNsDialog = false
+                                                }.padding(horizontal = 4.dp, vertical = 8.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                    ) {
+                                        RadioButton(selected = ns == option, onClick = null)
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text(
+                                                text = stringResource(option.labelRes),
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                fontWeight = FontWeight.SemiBold,
+                                            )
+                                            Text(
+                                                text = stringResource(option.descriptionRes),
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            )
+                                        }
+                                    }
+                                }
+                            }
                         },
-                        trailing = { Switch(checked = allowed, onCheckedChange = null) },
+                        confirmButton = {},
+                        dismissButton = {
+                            TextButton(onClick = { showNsDialog = false }) {
+                                Text(stringResource(R.string.dialog_cancel))
+                            }
+                        },
                     )
+                }
 
+                CardItem(index = 0, total = 1) {
                     Row(
                         modifier =
                             Modifier
@@ -364,26 +561,15 @@ fun AppDetailScreen(
                                     indication = null,
                                 ) {
                                     haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                                    showCapsDialog = true
+                                    showNsDialog = true
                                 }.padding(horizontal = 16.dp, vertical = 14.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Tune,
-                            contentDescription = null,
-                            tint =
-                                if (allowed) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-                                },
-                        )
-                        Spacer(Modifier.width(14.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = stringResource(R.string.app_caps_selected, caps.size, LinuxCap.entries.size),
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.SemiBold,
+                                text = stringResource(R.string.app_mount_namespace),
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.Bold,
                                 color =
                                     if (allowed) {
                                         MaterialTheme.colorScheme.onSurface
@@ -392,30 +578,14 @@ fun AppDetailScreen(
                                     },
                             )
                             Text(
-                                text =
-                                    when {
-                                        !allowed -> {
-                                            stringResource(R.string.app_enable_root_first)
-                                        }
-
-                                        caps.isEmpty() -> {
-                                            stringResource(R.string.app_no_capabilities)
-                                        }
-
-                                        else -> {
-                                            caps.take(4).joinToString(" · ") { it.label } +
-                                                if (caps.size > 4) " +${caps.size - 4}" else ""
-                                        }
-                                    },
-                                style = MaterialTheme.typography.labelSmall,
+                                text = stringResource(ns.labelRes),
+                                style = MaterialTheme.typography.bodyMedium,
                                 color =
                                     if (allowed) {
-                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                                        MaterialTheme.colorScheme.onSurfaceVariant
                                     } else {
                                         MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
                                     },
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
                             )
                         }
                         if (allowed) {
@@ -423,125 +593,10 @@ fun AppDetailScreen(
                                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
-                                modifier = Modifier.size(20.dp),
                             )
-                        }
-                    }
-                    Column(
-                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
-                    ) {
-                        Text(
-                            text = stringResource(R.string.app_selinux_domain),
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                            modifier = Modifier.padding(bottom = 6.dp, start = 2.dp),
-                        )
-                        OutlinedTextField(
-                            value = domain,
-                            onValueChange = { domain = it },
-                            label = {
-                                Text(
-                                    "domain",
-                                    fontFamily = FontFamily.Monospace,
-                                    fontSize = 12.sp,
-                                )
-                            },
-                            singleLine = true,
-                            textStyle =
-                                MaterialTheme.typography.bodySmall.copy(
-                                    fontFamily = FontFamily.Monospace,
-                                ),
-                            modifier = Modifier.fillMaxWidth(),
-                            enabled = allowed,
-                            trailingIcon = {
-                                if (domain != "u:r:nksu:s0") {
-                                    IconButton(
-                                        onClick = {
-                                            haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                                            domain = "u:r:nksu:s0"
-                                        },
-                                    ) {
-                                        Icon(
-                                            Icons.Default.Refresh,
-                                            contentDescription = stringResource(R.string.cd_reset),
-                                            modifier = Modifier.size(18.dp),
-                                        )
-                                    }
-                                }
-                            },
-                            shape = RoundedCornerShape(12.dp),
-                        )
-                        if (!allowed) {
-                            Spacer(Modifier.height(6.dp))
-                            Text(
-                                stringResource(R.string.app_enable_root_first),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
-                            )
-                        }
-                    }
-
-                    RowDivider()
-                    Column(modifier = Modifier.padding(vertical = 6.dp)) {
-                        Text(
-                            text = stringResource(R.string.app_mount_namespace),
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                            modifier =
-                                Modifier.padding(
-                                    start = 16.dp,
-                                    end = 16.dp,
-                                    top = 6.dp,
-                                    bottom = 2.dp,
-                                ),
-                        )
-                        NksuNamespace.entries.forEach { option ->
-                            Row(
-                                modifier =
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .clip(RoundedCornerShape(10.dp))
-                                        .clickable(
-                                            enabled = allowed,
-                                            interactionSource = remember { MutableInteractionSource() },
-                                            indication = null,
-                                        ) {
-                                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                            ns = option
-                                        }.padding(horizontal = 16.dp, vertical = 10.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                RadioButton(
-                                    selected = ns == option,
-                                    onClick = null,
-                                    enabled = allowed,
-                                )
-                                Spacer(Modifier.width(10.dp))
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = stringResource(option.labelRes),
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color =
-                                            if (allowed) {
-                                                MaterialTheme.colorScheme.onSurface
-                                            } else {
-                                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-                                            },
-                                    )
-                                    Text(
-                                        text = stringResource(option.descriptionRes),
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                                    )
-                                }
-                            }
                         }
                     }
                 }
-                Spacer(Modifier.height(20.dp))
             }
         }
     }
