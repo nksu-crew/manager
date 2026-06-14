@@ -60,8 +60,8 @@ jobs:
         path: flutter/build/host/outputs/repo/
         if-no-files-found: error
 
-     - name: Install Rust target
-        run: |
+    - name: Install Rust target
+      run: |
           rustup target add aarch64-linux-android
 
     - name: Build ncore
