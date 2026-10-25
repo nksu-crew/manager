@@ -12,12 +12,12 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -31,7 +31,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.compose.NavHost
@@ -49,7 +48,9 @@ import me.nekosu.aqnya.feature.home.ui.HomeScreen
 import me.nekosu.aqnya.ui.animation.PageTransitions
 import me.nekosu.aqnya.ui.component.NonProductionRibbon
 import me.nekosu.aqnya.ui.navigation.BottomNavItem
+import me.nekosu.aqnya.ui.navigation.GlassBottomBarContentPadding
 import me.nekosu.aqnya.ui.navigation.GlassBottomBarHorizontalPadding
+import me.nekosu.aqnya.ui.navigation.GlassBottomBarVerticalPadding
 import me.nekosu.aqnya.ui.navigation.GlassBottomNavigationBar
 import me.nekosu.aqnya.ui.navigation.LocalBottomBarClearance
 import me.nekosu.aqnya.ui.navigation.NormalBottomNavigationBar
@@ -128,14 +129,11 @@ fun MainScreen() {
     )
     val navBarStyle = NavBarStyle.fromValue(navBarStyleValue)
     val glassStyle = navBarStyle == NavBarStyle.GLASS
-    val navBarInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-    val glassBarBottomPadding = if (navBarInset > 0.dp) 8.dp + navBarInset else 28.dp
-    val glassBarClearance = if (navBarInset > 0.dp) 104.dp else 124.dp
     val bottomBarClearance =
         if (navBarStyle == NavBarStyle.STANDARD) {
             StandardBottomBarContentPadding
         } else {
-            glassBarClearance
+            GlassBottomBarContentPadding
         }
 
     val homeViewModel: HomeViewModel =
@@ -337,11 +335,15 @@ fun MainScreen() {
                             selectedIndex = selectedIndex,
                             onTabClick = onTabClick,
                             modifier =
-                                Modifier.padding(
-                                    start = GlassBottomBarHorizontalPadding,
-                                    end = GlassBottomBarHorizontalPadding,
-                                    bottom = glassBarBottomPadding,
-                                ),
+                                Modifier
+                                    .navigationBarsPadding()
+                                    .windowInsetsPadding(
+                                        WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal),
+                                    )
+                                    .padding(
+                                        horizontal = GlassBottomBarHorizontalPadding,
+                                        vertical = GlassBottomBarVerticalPadding,
+                                    ),
                         )
                     }
                 }
