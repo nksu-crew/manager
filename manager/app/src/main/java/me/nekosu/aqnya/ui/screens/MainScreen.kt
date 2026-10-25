@@ -4,10 +4,10 @@ import android.app.Application
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -53,61 +52,58 @@ import me.nekosu.aqnya.ui.screens.install.InstallScreen
 import me.nekosu.aqnya.ui.screens.modules.ModuleScreen
 import me.nekosu.aqnya.ui.screens.settings.SettingsScreen
 
-// 根据 Tab 在 navItems 中的相对位置决定滑入/滑出方向，
-// 非 Tab 路由（about/settings 详情等）一律走 fade，交给 PageTransitions 处理。
+// Flutter's tab switcher cross-fades the page content over 70 ms. Routes that
+// leave the tab set use the same Cupertino-style slide as pushed pages.
+private const val TabFadeMillis = 70
+
+private fun AnimatedContentTransitionScope<NavBackStackEntry>.isTabSwitch(
+    navItems: List<BottomNavItem>,
+): Boolean {
+    val routes = navItems.map { it.route }
+    return initialState.destination.route in routes && targetState.destination.route in routes
+}
+
 private fun tabTransitionEnter(
     navItems: List<BottomNavItem>,
-    motionScheme: MotionScheme,
 ): AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition =
     {
-        val routes = navItems.map { it.route }
-        val initialRoute = initialState.destination.route
-        val targetRoute = targetState.destination.route
-
-        if (initialRoute in routes && targetRoute in routes) {
-            val initialIndex = navItems.indexOfFirst { it.route == initialRoute }
-            val targetIndex = navItems.indexOfFirst { it.route == targetRoute }
-            if (targetIndex > initialIndex) {
-                slideInHorizontally(
-                    animationSpec = motionScheme.defaultSpatialSpec(),
-                    initialOffsetX = { it / 4 },
-                ) + fadeIn(animationSpec = motionScheme.defaultEffectsSpec())
-            } else {
-                slideInHorizontally(
-                    animationSpec = motionScheme.defaultSpatialSpec(),
-                    initialOffsetX = { -it / 4 },
-                ) + fadeIn(animationSpec = motionScheme.defaultEffectsSpec())
-            }
+        if (isTabSwitch(navItems)) {
+            fadeIn(animationSpec = tween(TabFadeMillis, easing = LinearEasing))
         } else {
-            fadeIn(animationSpec = motionScheme.defaultEffectsSpec())
+            PageTransitions.enter()
         }
     }
 
 private fun tabTransitionExit(
     navItems: List<BottomNavItem>,
-    motionScheme: MotionScheme,
 ): AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition =
     {
-        val routes = navItems.map { it.route }
-        val initialRoute = initialState.destination.route
-        val targetRoute = targetState.destination.route
-
-        if (initialRoute in routes && targetRoute in routes) {
-            val initialIndex = navItems.indexOfFirst { it.route == initialRoute }
-            val targetIndex = navItems.indexOfFirst { it.route == targetRoute }
-            if (targetIndex > initialIndex) {
-                slideOutHorizontally(
-                    animationSpec = motionScheme.fastSpatialSpec(),
-                    targetOffsetX = { -it / 4 },
-                ) + fadeOut(animationSpec = motionScheme.fastEffectsSpec())
-            } else {
-                slideOutHorizontally(
-                    animationSpec = motionScheme.fastSpatialSpec(),
-                    targetOffsetX = { it / 4 },
-                ) + fadeOut(animationSpec = motionScheme.fastEffectsSpec())
-            }
+        if (isTabSwitch(navItems)) {
+            fadeOut(animationSpec = tween(TabFadeMillis, easing = LinearEasing))
         } else {
-            fadeOut(animationSpec = motionScheme.fastEffectsSpec())
+            PageTransitions.exit()
+        }
+    }
+
+private fun tabTransitionPopEnter(
+    navItems: List<BottomNavItem>,
+): AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition =
+    {
+        if (isTabSwitch(navItems)) {
+            fadeIn(animationSpec = tween(TabFadeMillis, easing = LinearEasing))
+        } else {
+            PageTransitions.popEnter()
+        }
+    }
+
+private fun tabTransitionPopExit(
+    navItems: List<BottomNavItem>,
+): AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition =
+    {
+        if (isTabSwitch(navItems)) {
+            fadeOut(animationSpec = tween(TabFadeMillis, easing = LinearEasing))
+        } else {
+            PageTransitions.popExit()
         }
     }
 
@@ -116,7 +112,6 @@ private fun tabTransitionExit(
 fun MainScreen() {
     val navController = rememberNavController()
     val context = LocalContext.current
-    val motionScheme = MaterialTheme.motionScheme
 
     val homeViewModel: HomeViewModel =
         viewModel(
@@ -193,11 +188,17 @@ fun MainScreen() {
                 navController = navController,
                 startDestination = BottomNavItem.Home.route,
                 modifier = Modifier.fillMaxSize(),
+                enterTransition = { PageTransitions.enter() },
+                exitTransition = { PageTransitions.exit() },
+                popEnterTransition = { PageTransitions.popEnter() },
+                popExitTransition = { PageTransitions.popExit() },
             ) {
                 composable(
                     route = BottomNavItem.Home.route,
-                    enterTransition = tabTransitionEnter(navItems, motionScheme),
-                    exitTransition = tabTransitionExit(navItems, motionScheme),
+                    enterTransition = tabTransitionEnter(navItems),
+                    exitTransition = tabTransitionExit(navItems),
+                    popEnterTransition = tabTransitionPopEnter(navItems),
+                    popExitTransition = tabTransitionPopExit(navItems),
                 ) {
                     HomeScreen(
                         viewModel = homeViewModel,
@@ -207,8 +208,10 @@ fun MainScreen() {
 
                 composable(
                     route = BottomNavItem.History.route,
-                    enterTransition = tabTransitionEnter(navItems, motionScheme),
-                    exitTransition = tabTransitionExit(navItems, motionScheme),
+                    enterTransition = tabTransitionEnter(navItems),
+                    exitTransition = tabTransitionExit(navItems),
+                    popEnterTransition = tabTransitionPopEnter(navItems),
+                    popExitTransition = tabTransitionPopExit(navItems),
                 ) {
                     AppListScreen(
                         navController = navController,
@@ -218,40 +221,38 @@ fun MainScreen() {
 
                 composable(
                     route = BottomNavItem.Modules.route,
-                    enterTransition = tabTransitionEnter(navItems, motionScheme),
-                    exitTransition = tabTransitionExit(navItems, motionScheme),
+                    enterTransition = tabTransitionEnter(navItems),
+                    exitTransition = tabTransitionExit(navItems),
+                    popEnterTransition = tabTransitionPopEnter(navItems),
+                    popExitTransition = tabTransitionPopExit(navItems),
                 ) {
                     ModuleScreen()
                 }
 
                 composable(
                     route = BottomNavItem.Settings.route,
-                    enterTransition = tabTransitionEnter(navItems, motionScheme),
-                    exitTransition = tabTransitionExit(navItems, motionScheme),
+                    enterTransition = tabTransitionEnter(navItems),
+                    exitTransition = tabTransitionExit(navItems),
+                    popEnterTransition = tabTransitionPopEnter(navItems),
+                    popExitTransition = tabTransitionPopExit(navItems),
                 ) {
                     SettingsScreen(navController)
                 }
 
                 composable(
                     route = AppRoute.About,
-                    enterTransition = { PageTransitions.defaultEnter(motionScheme) },
-                    exitTransition = { PageTransitions.defaultExit(motionScheme) },
                 ) {
                     AboutScreen(navController)
                 }
 
                 composable(
                     route = AppRoute.OpenSource,
-                    enterTransition = { PageTransitions.defaultEnter(motionScheme) },
-                    exitTransition = { PageTransitions.defaultExit(motionScheme) },
                 ) {
                     OpenSourceScreen(navController)
                 }
 
                 composable(
                     route = AppRoute.Install,
-                    enterTransition = { PageTransitions.defaultEnter(motionScheme) },
-                    exitTransition = { PageTransitions.defaultExit(motionScheme) },
                 ) {
                     InstallScreen(navController)
                 }
