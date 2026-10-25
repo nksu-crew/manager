@@ -8,7 +8,7 @@ enum class NavBarStyle(
     val value: Int,
 ) {
     STANDARD(R.string.nav_bar_style_standard, 0),
-    GLASS(R.string.nav_bar_style_glass, 2),
+    GLASS(R.string.nav_bar_style_glass, 1),
     ;
 
     companion object {
