@@ -47,7 +47,6 @@ import me.nekosu.aqnya.feature.home.presentation.HomeViewModelFactory
 import me.nekosu.aqnya.feature.home.ui.HomeScreen
 import me.nekosu.aqnya.ui.animation.PageTransitions
 import me.nekosu.aqnya.ui.component.NonProductionRibbon
-import me.nekosu.aqnya.ui.component.rememberBlurEnabled
 import me.nekosu.aqnya.ui.navigation.BottomNavItem
 import me.nekosu.aqnya.ui.navigation.GlassBottomBarContentPadding
 import me.nekosu.aqnya.ui.navigation.GlassBottomBarHorizontalPadding
@@ -125,12 +124,11 @@ fun MainScreen() {
     val navController = rememberNavController()
     val context = LocalContext.current
 
-    val blurEnabled = rememberBlurEnabled()
     val navBarStyleValue by AppPreferences.navBarStyleFlow(context).collectAsState(
         initial = AppPreferences.navBarStyle(context),
     )
     val navBarStyle = NavBarStyle.fromValue(navBarStyleValue)
-    val glassBlurEnabled = navBarStyle == NavBarStyle.GLASS && blurEnabled
+    val glassStyle = navBarStyle == NavBarStyle.GLASS
     val bottomBarClearance =
         if (navBarStyle == NavBarStyle.STANDARD) {
             StandardBottomBarContentPadding
@@ -203,7 +201,7 @@ fun MainScreen() {
                         Modifier
                             .fillMaxSize()
                             .padding(innerPadding)
-                            .then(if (glassBlurEnabled) Modifier.layerBackdrop(backdrop) else Modifier),
+                            .then(if (glassStyle) Modifier.layerBackdrop(backdrop) else Modifier),
                 ) {
                     NavHost(
                         navController = navController,
@@ -330,14 +328,12 @@ fun MainScreen() {
                         )
                     }
 
-                    NavBarStyle.FLOATING,
                     NavBarStyle.GLASS -> {
                         GlassBottomNavigationBar(
                             backdrop = backdrop,
                             items = navItems,
                             selectedIndex = selectedIndex,
                             onTabClick = onTabClick,
-                            blurEnabled = glassBlurEnabled,
                             modifier =
                                 Modifier
                                     .navigationBarsPadding()

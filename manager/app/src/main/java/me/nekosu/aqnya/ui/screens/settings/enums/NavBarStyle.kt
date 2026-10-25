@@ -8,7 +8,6 @@ enum class NavBarStyle(
     val value: Int,
 ) {
     STANDARD(R.string.nav_bar_style_standard, 0),
-    FLOATING(R.string.nav_bar_style_floating, 1),
     GLASS(R.string.nav_bar_style_glass, 2),
     ;
 
