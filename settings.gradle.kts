@@ -19,14 +19,12 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven {
-            url = uri("${rootDir}/flutter/build/host/outputs/repo")
-        }
-        maven {
-            url = uri("https://storage.googleapis.com/download.flutter.io")
-        }
     }
 }
 
 rootProject.name = "nekosu"
 include(":app")
+include(":neko")
+// The Gradle root lives at the repository root, but the Android module stays
+// under manager/.
+project(":app").projectDir = file("manager/app")

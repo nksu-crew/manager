@@ -11,3 +11,13 @@ release.keystore
 ktlint
 app/src/main/jniLibs/
 .kotlin/
+.ccache/
+manager/app/src/main/assets/ko/
+# Local kernel debug artifacts
+last_kmsg
+dmesg.log
+logcat.log
+
+# Rust host check artifacts
+neko/target/
+Cargo.lock
