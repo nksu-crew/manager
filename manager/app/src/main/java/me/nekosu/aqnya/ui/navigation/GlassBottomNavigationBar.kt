@@ -8,6 +8,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -43,7 +44,6 @@ import com.kyant.backdrop.drawBackdrop
 import com.kyant.backdrop.effects.blur
 import com.kyant.backdrop.effects.lens
 import com.kyant.backdrop.effects.vibrancy
-import com.kyant.shapes.Capsule
 
 /** Floating glass bar metrics, mirroring the Flutter manager's GlassTabBar. */
 val GlassBottomBarHeight = 64.dp
@@ -88,7 +88,7 @@ fun GlassBottomNavigationBar(
                 .fillMaxWidth()
                 .drawBackdrop(
                     backdrop = backdrop,
-                    shape = { Capsule() },
+                    shape = { CircleShape },
                     effects = {
                         vibrancy()
                         blur(8f.dp.toPx())
@@ -96,7 +96,7 @@ fun GlassBottomNavigationBar(
                     },
                     onDrawSurface = { drawRect(surfaceColor) },
                 )
-                .clip(Capsule())
+                .clip(CircleShape)
                 .padding(4.dp),
     ) {
         val tabWidth = maxWidth / items.size
@@ -113,7 +113,7 @@ fun GlassBottomNavigationBar(
                     .width(tabWidth)
                     .fillMaxHeight()
                     .padding(horizontal = 2.dp, vertical = 2.dp)
-                    .background(indicatorColor, Capsule()),
+                    .background(indicatorColor, CircleShape),
         )
 
         Row(
