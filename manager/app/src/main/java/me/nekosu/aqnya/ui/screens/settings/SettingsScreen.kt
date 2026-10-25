@@ -38,6 +38,7 @@ import me.nekosu.aqnya.R
 import me.nekosu.aqnya.core.navigation.AppRoute
 import me.nekosu.aqnya.data.prefs.AppPreferences
 import me.nekosu.aqnya.ui.component.HazeTopAppBar
+import me.nekosu.aqnya.ui.navigation.GlassBottomBarContentPadding
 import me.nekosu.aqnya.ui.screens.settings.enums.ThemeColor
 import me.nekosu.aqnya.ui.screens.settings.enums.ThemeMode
 import me.nekosu.aqnya.util.LocaleHelper
@@ -99,7 +100,7 @@ fun SettingsScreen(navController: NavController) {
                     .verticalScroll(rememberScrollState())
                     .padding(innerPadding)
                     .padding(top = 16.dp)
-                    .padding(bottom = 96.dp)
+                    .padding(bottom = GlassBottomBarContentPadding)
                     .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {

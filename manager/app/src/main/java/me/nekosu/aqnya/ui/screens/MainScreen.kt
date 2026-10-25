@@ -2,6 +2,7 @@ package me.nekosu.aqnya.ui.screens
 
 import android.app.Application
 import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.LinearEasing
@@ -12,9 +13,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -27,24 +30,27 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import kotlinx.coroutines.delay
 import me.nekosu.aqnya.core.navigation.AppRoute
 import me.nekosu.aqnya.data.prefs.AppPreferences
 import me.nekosu.aqnya.feature.home.presentation.HomeViewModel
 import me.nekosu.aqnya.feature.home.presentation.HomeViewModelFactory
 import me.nekosu.aqnya.feature.home.ui.HomeScreen
-import me.nekosu.aqnya.ui.animation.AnimatedBottomNavBar
 import me.nekosu.aqnya.ui.animation.PageTransitions
 import me.nekosu.aqnya.ui.component.NonProductionRibbon
 import me.nekosu.aqnya.ui.navigation.BottomNavItem
-import me.nekosu.aqnya.ui.navigation.NormalBottomNavigationBar
+import me.nekosu.aqnya.ui.navigation.GlassBottomBarContentPadding
+import me.nekosu.aqnya.ui.navigation.GlassBottomBarHorizontalPadding
+import me.nekosu.aqnya.ui.navigation.GlassBottomBarVerticalPadding
+import me.nekosu.aqnya.ui.navigation.GlassBottomNavigationBar
 import me.nekosu.aqnya.ui.permission.AppPermission
 import me.nekosu.aqnya.ui.permission.MiuiPermissionUtils
 import me.nekosu.aqnya.ui.permission.rememberPermissionState
@@ -157,140 +163,160 @@ fun MainScreen() {
         }
     }
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.surfaceContainer,
-        contentWindowInsets =
-            WindowInsets.safeDrawing.only(
-                WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal,
-            ),
-        bottomBar = {
-            AnimatedBottomNavBar(
-                visible = showBottomBar,
+    val backgroundColor = MaterialTheme.colorScheme.surfaceContainer
+    val backdrop =
+        rememberLayerBackdrop {
+            drawRect(backgroundColor)
+            drawContent()
+        }
+
+    Box(Modifier.fillMaxSize()) {
+        Scaffold(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+            contentWindowInsets =
+                WindowInsets.safeDrawing.only(
+                    WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal,
+                ),
+        ) { innerPadding ->
+            Box(
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding)
+                        .layerBackdrop(backdrop),
+            ) {
+                NavHost(
+                    navController = navController,
+                    startDestination = BottomNavItem.Home.route,
+                    modifier = Modifier.fillMaxSize(),
+                    enterTransition = { PageTransitions.enter() },
+                    exitTransition = { PageTransitions.exit() },
+                    popEnterTransition = { PageTransitions.popEnter() },
+                    popExitTransition = { PageTransitions.popExit() },
+                ) {
+                    composable(
+                        route = BottomNavItem.Home.route,
+                        enterTransition = tabTransitionEnter(navItems),
+                        exitTransition = tabTransitionExit(navItems),
+                        popEnterTransition = tabTransitionPopEnter(navItems),
+                        popExitTransition = tabTransitionPopExit(navItems),
+                    ) {
+                        HomeScreen(
+                            viewModel = homeViewModel,
+                            onInstallClick = { navController.navigate(AppRoute.Install) },
+                        )
+                    }
+
+                    composable(
+                        route = BottomNavItem.History.route,
+                        enterTransition = tabTransitionEnter(navItems),
+                        exitTransition = tabTransitionExit(navItems),
+                        popEnterTransition = tabTransitionPopEnter(navItems),
+                        popExitTransition = tabTransitionPopExit(navItems),
+                    ) {
+                        AppListScreen(
+                            navController = navController,
+                            extraBottomPadding = GlassBottomBarContentPadding,
+                        )
+                    }
+
+                    composable(
+                        route = BottomNavItem.Modules.route,
+                        enterTransition = tabTransitionEnter(navItems),
+                        exitTransition = tabTransitionExit(navItems),
+                        popEnterTransition = tabTransitionPopEnter(navItems),
+                        popExitTransition = tabTransitionPopExit(navItems),
+                    ) {
+                        ModuleScreen()
+                    }
+
+                    composable(
+                        route = BottomNavItem.Settings.route,
+                        enterTransition = tabTransitionEnter(navItems),
+                        exitTransition = tabTransitionExit(navItems),
+                        popEnterTransition = tabTransitionPopEnter(navItems),
+                        popExitTransition = tabTransitionPopExit(navItems),
+                    ) {
+                        SettingsScreen(navController)
+                    }
+
+                    composable(
+                        route = AppRoute.About,
+                    ) {
+                        AboutScreen(navController)
+                    }
+
+                    composable(
+                        route = AppRoute.OpenSource,
+                    ) {
+                        OpenSourceScreen(navController)
+                    }
+
+                    composable(
+                        route = AppRoute.Install,
+                    ) {
+                        InstallScreen(navController)
+                    }
+
+                    composable(AppRoute.AppDetailPattern) { backStackEntry ->
+                        val pkg = backStackEntry.arguments?.getString("packageName")
+                        if (pkg == null) {
+                            LaunchedEffect(Unit) { navController.popBackStack() }
+                            return@composable
+                        }
+                        val appViewModel: AppViewModel = viewModel(factory = AppViewModelFactory(context.applicationContext))
+                        val app = appViewModel.allApps.find { it.packageName == pkg }
+
+                        if (app != null) {
+                            AppDetailScreen(
+                                app = app,
+                                config = appViewModel.appConfigs[pkg],
+                                onSave = { appViewModel.setAppConfig(app, it) },
+                                onBack = { navController.popBackStack() },
+                            )
+                        } else {
+                            LaunchedEffect(Unit) {
+                                appViewModel.loadApps()
+                                if (appViewModel.allApps.none { it.packageName == pkg }) {
+                                    navController.popBackStack()
+                                }
+                            }
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                LoadingState()
+                            }
+                        }
+                    }
+                }
+
+                NonProductionRibbon(modifier = Modifier.align(Alignment.TopEnd))
+            }
+        }
+
+        AnimatedVisibility(
+            visible = showBottomBar,
+            enter = fadeIn(animationSpec = tween(150)),
+            exit = fadeOut(animationSpec = tween(100)),
+            modifier =
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .navigationBarsPadding()
+                    .windowInsetsPadding(
+                        WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal),
+                    )
+                    .padding(
+                        horizontal = GlassBottomBarHorizontalPadding,
+                        vertical = GlassBottomBarVerticalPadding,
+                    ),
+        ) {
+            GlassBottomNavigationBar(
+                backdrop = backdrop,
                 items = navItems,
                 selectedIndex = selectedIndex,
                 onTabClick = onTabClick,
-            ) { items, selIndex, onClick ->
-                NormalBottomNavigationBar(
-                    items = items,
-                    selectedIndex = selIndex,
-                    onTabClick = onClick,
-                )
-            }
-        },
-    ) { innerPadding ->
-        Box(
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-        ) {
-            NavHost(
-                navController = navController,
-                startDestination = BottomNavItem.Home.route,
-                modifier = Modifier.fillMaxSize(),
-                enterTransition = { PageTransitions.enter() },
-                exitTransition = { PageTransitions.exit() },
-                popEnterTransition = { PageTransitions.popEnter() },
-                popExitTransition = { PageTransitions.popExit() },
-            ) {
-                composable(
-                    route = BottomNavItem.Home.route,
-                    enterTransition = tabTransitionEnter(navItems),
-                    exitTransition = tabTransitionExit(navItems),
-                    popEnterTransition = tabTransitionPopEnter(navItems),
-                    popExitTransition = tabTransitionPopExit(navItems),
-                ) {
-                    HomeScreen(
-                        viewModel = homeViewModel,
-                        onInstallClick = { navController.navigate(AppRoute.Install) },
-                    )
-                }
-
-                composable(
-                    route = BottomNavItem.History.route,
-                    enterTransition = tabTransitionEnter(navItems),
-                    exitTransition = tabTransitionExit(navItems),
-                    popEnterTransition = tabTransitionPopEnter(navItems),
-                    popExitTransition = tabTransitionPopExit(navItems),
-                ) {
-                    AppListScreen(
-                        navController = navController,
-                        extraBottomPadding = 12.dp,
-                    )
-                }
-
-                composable(
-                    route = BottomNavItem.Modules.route,
-                    enterTransition = tabTransitionEnter(navItems),
-                    exitTransition = tabTransitionExit(navItems),
-                    popEnterTransition = tabTransitionPopEnter(navItems),
-                    popExitTransition = tabTransitionPopExit(navItems),
-                ) {
-                    ModuleScreen()
-                }
-
-                composable(
-                    route = BottomNavItem.Settings.route,
-                    enterTransition = tabTransitionEnter(navItems),
-                    exitTransition = tabTransitionExit(navItems),
-                    popEnterTransition = tabTransitionPopEnter(navItems),
-                    popExitTransition = tabTransitionPopExit(navItems),
-                ) {
-                    SettingsScreen(navController)
-                }
-
-                composable(
-                    route = AppRoute.About,
-                ) {
-                    AboutScreen(navController)
-                }
-
-                composable(
-                    route = AppRoute.OpenSource,
-                ) {
-                    OpenSourceScreen(navController)
-                }
-
-                composable(
-                    route = AppRoute.Install,
-                ) {
-                    InstallScreen(navController)
-                }
-
-                composable(AppRoute.AppDetailPattern) { backStackEntry ->
-                    val pkg = backStackEntry.arguments?.getString("packageName")
-                    if (pkg == null) {
-                        LaunchedEffect(Unit) { navController.popBackStack() }
-                        return@composable
-                    }
-                    val appViewModel: AppViewModel = viewModel(factory = AppViewModelFactory(context.applicationContext))
-                    val app = appViewModel.allApps.find { it.packageName == pkg }
-
-                    if (app != null) {
-                        AppDetailScreen(
-                            app = app,
-                            config = appViewModel.appConfigs[pkg],
-                            onSave = { appViewModel.setAppConfig(app, it) },
-                            onBack = { navController.popBackStack() },
-                        )
-                    } else {
-                        LaunchedEffect(Unit) {
-                            appViewModel.loadApps()
-                            if (appViewModel.allApps.none { it.packageName == pkg }) {
-                                navController.popBackStack()
-                            }
-                        }
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            LoadingState()
-                        }
-                    }
-                }
-            }
-
-            NonProductionRibbon(modifier = Modifier.align(Alignment.TopEnd))
+            )
         }
     }
 }
