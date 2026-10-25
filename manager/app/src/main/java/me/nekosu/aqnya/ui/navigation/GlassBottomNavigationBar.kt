@@ -5,7 +5,6 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -38,6 +37,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kyant.backdrop.Backdrop
@@ -45,6 +45,9 @@ import com.kyant.backdrop.drawBackdrop
 import com.kyant.backdrop.effects.blur
 import com.kyant.backdrop.effects.lens
 import com.kyant.backdrop.effects.vibrancy
+import com.kyant.backdrop.highlight.Highlight
+import com.kyant.backdrop.shadow.InnerShadow
+import com.kyant.backdrop.shadow.Shadow
 
 /** Floating glass bar metrics, mirroring the Flutter manager's GlassTabBar. */
 val GlassBottomBarHeight = 64.dp
@@ -82,11 +85,16 @@ fun GlassBottomNavigationBar(
     val isDark = scheme.surfaceContainer.luminance() < 0.5f
     val surfaceColor =
         if (isDark) {
-            Color.Black.copy(alpha = 0.4f)
+            Color.Black.copy(alpha = 0.32f)
         } else {
-            Color.White.copy(alpha = 0.5f)
+            Color.White.copy(alpha = 0.42f)
         }
-    val indicatorColor = scheme.primaryContainer.copy(alpha = 0.6f)
+    val indicatorTint =
+        if (isDark) {
+            Color.White.copy(alpha = 0.10f)
+        } else {
+            Color.Black.copy(alpha = 0.06f)
+        }
 
     BoxWithConstraints(
         modifier =
@@ -98,8 +106,23 @@ fun GlassBottomNavigationBar(
                     shape = { CircleShape },
                     effects = {
                         vibrancy()
-                        blur(8f.dp.toPx())
-                        lens(24f.dp.toPx(), 24f.dp.toPx())
+                        blur(10f.dp.toPx())
+                        lens(20f.dp.toPx(), 24f.dp.toPx())
+                    },
+                    highlight = { Highlight.Default },
+                    shadow = {
+                        Shadow(
+                            radius = 16.dp,
+                            offset = DpOffset(0.dp, 4.dp),
+                            alpha = 0.4f,
+                        )
+                    },
+                    innerShadow = {
+                        InnerShadow(
+                            radius = 12.dp,
+                            offset = DpOffset(0.dp, 1.dp),
+                            alpha = 0.45f,
+                        )
                     },
                     onDrawSurface = { drawRect(surfaceColor) },
                 )
@@ -120,7 +143,24 @@ fun GlassBottomNavigationBar(
                     .width(tabWidth)
                     .fillMaxHeight()
                     .padding(horizontal = 2.dp, vertical = 2.dp)
-                    .background(indicatorColor, CircleShape),
+                    .drawBackdrop(
+                        backdrop = backdrop,
+                        shape = { CircleShape },
+                        effects = {
+                            vibrancy()
+                            lens(6f.dp.toPx(), 10f.dp.toPx())
+                        },
+                        highlight = { Highlight.Default.copy(alpha = 0.8f) },
+                        shadow = null,
+                        innerShadow = {
+                            InnerShadow(
+                                radius = 8.dp,
+                                offset = DpOffset(0.dp, 1.dp),
+                                alpha = 0.3f,
+                            )
+                        },
+                        onDrawSurface = { drawRect(indicatorTint) },
+                    ),
         )
 
         Row(
