@@ -27,11 +27,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
@@ -56,6 +58,12 @@ val GlassBottomBarVerticalPadding = 16.dp
  */
 val GlassBottomBarContentPadding = 128.dp
 
+/** Clearance for the stock Material 3 navigation bar (80 dp) plus a 16 dp gap. */
+val StandardBottomBarContentPadding = 96.dp
+
+/** Bottom scroll clearance selected by the current navigation bar style. */
+val LocalBottomBarClearance = compositionLocalOf { GlassBottomBarContentPadding }
+
 /**
  * Liquid-glass bottom bar backed by the `io.github.kyant0:backdrop` library.
  *
@@ -69,6 +77,7 @@ fun GlassBottomNavigationBar(
     items: List<BottomNavItem>,
     selectedIndex: Int,
     onTabClick: (Int) -> Unit,
+    blurEnabled: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val scheme = MaterialTheme.colorScheme
@@ -81,21 +90,30 @@ fun GlassBottomNavigationBar(
         }
     val indicatorColor = scheme.primaryContainer.copy(alpha = 0.6f)
 
+    val surfaceModifier =
+        if (blurEnabled) {
+            Modifier.drawBackdrop(
+                backdrop = backdrop,
+                shape = { CircleShape },
+                effects = {
+                    vibrancy()
+                    blur(8f.dp.toPx())
+                    lens(24f.dp.toPx(), 24f.dp.toPx())
+                },
+                onDrawSurface = { drawRect(surfaceColor) },
+            )
+        } else {
+            Modifier
+                .shadow(6.dp, CircleShape)
+                .background(scheme.surfaceContainer, CircleShape)
+        }
+
     BoxWithConstraints(
         modifier =
             modifier
                 .height(GlassBottomBarHeight)
                 .fillMaxWidth()
-                .drawBackdrop(
-                    backdrop = backdrop,
-                    shape = { CircleShape },
-                    effects = {
-                        vibrancy()
-                        blur(8f.dp.toPx())
-                        lens(24f.dp.toPx(), 24f.dp.toPx())
-                    },
-                    onDrawSurface = { drawRect(surfaceColor) },
-                )
+                .then(surfaceModifier)
                 .clip(CircleShape)
                 .padding(4.dp),
     ) {
