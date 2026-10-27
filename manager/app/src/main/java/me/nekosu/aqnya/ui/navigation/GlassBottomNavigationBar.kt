@@ -22,10 +22,12 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -43,7 +45,6 @@ import com.kyant.backdrop.drawBackdrop
 import com.kyant.backdrop.effects.blur
 import com.kyant.backdrop.effects.lens
 import com.kyant.backdrop.effects.vibrancy
-import com.kyant.shapes.Capsule
 
 /** Floating glass bar metrics, mirroring the Flutter manager's GlassTabBar. */
 val GlassBottomBarHeight = 64.dp
@@ -55,6 +56,12 @@ val GlassBottomBarVerticalPadding = 16.dp
  * both sides + the 32 dp gap used by the Flutter manager.
  */
 val GlassBottomBarContentPadding = 128.dp
+
+/** Clearance for the stock Material 3 navigation bar (80 dp) plus a 16 dp gap. */
+val StandardBottomBarContentPadding = 96.dp
+
+/** Bottom scroll clearance selected by the current navigation bar style. */
+val LocalBottomBarClearance = compositionLocalOf { GlassBottomBarContentPadding }
 
 /**
  * Liquid-glass bottom bar backed by the `io.github.kyant0:backdrop` library.
@@ -88,7 +95,7 @@ fun GlassBottomNavigationBar(
                 .fillMaxWidth()
                 .drawBackdrop(
                     backdrop = backdrop,
-                    shape = { Capsule() },
+                    shape = { CircleShape },
                     effects = {
                         vibrancy()
                         blur(8f.dp.toPx())
@@ -96,7 +103,7 @@ fun GlassBottomNavigationBar(
                     },
                     onDrawSurface = { drawRect(surfaceColor) },
                 )
-                .clip(Capsule())
+                .clip(CircleShape)
                 .padding(4.dp),
     ) {
         val tabWidth = maxWidth / items.size
@@ -113,7 +120,7 @@ fun GlassBottomNavigationBar(
                     .width(tabWidth)
                     .fillMaxHeight()
                     .padding(horizontal = 2.dp, vertical = 2.dp)
-                    .background(indicatorColor, Capsule()),
+                    .background(indicatorColor, CircleShape),
         )
 
         Row(

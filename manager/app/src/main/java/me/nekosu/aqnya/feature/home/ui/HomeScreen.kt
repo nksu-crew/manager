@@ -34,7 +34,7 @@ import me.nekosu.aqnya.core.model.InstallStatus
 import me.nekosu.aqnya.feature.home.presentation.HomeViewModel
 import me.nekosu.aqnya.ui.component.HazeTopAppBar
 import me.nekosu.aqnya.ui.component.StatusCard
-import me.nekosu.aqnya.ui.navigation.GlassBottomBarContentPadding
+import me.nekosu.aqnya.ui.navigation.LocalBottomBarClearance
 
 private data class InfoEntry(
     val label: String,
@@ -70,7 +70,7 @@ fun HomeScreenContent(
                         .verticalScroll(rememberScrollState())
                         .padding(innerPadding)
                         .padding(horizontal = 16.dp, vertical = 12.dp)
-                        .padding(bottom = GlassBottomBarContentPadding),
+                        .padding(bottom = LocalBottomBarClearance.current),
                 verticalArrangement = Arrangement.spacedBy(13.dp),
             ) {
                 StatusCard(
