@@ -1,18 +1,17 @@
-# nekosu
+# NekoSU Manager
 
-This project is part of the Nekosu project suite.
+Flutter-based manager for NekoSU. It provides the home dashboard, module and app
+management, WebUI hosting, settings, and the libbootpatcher installation flow.
 
-[![GitHub License](https://img.shields.io/github/license/FMAC-Team/manager?logo=gnu)](/LICENSE)
----
+## Build
 
-## License
+Install Flutter 3.47.7 with the Android toolchain, then run from this directory:
 
-This project is licensed under the **GNU General Public License v3.0**.  
-See the LICENSE file for details.
+```sh
+flutter pub get
+flutter build apk --release --target-platform android-arm64
+```
 
----
-
-## Contributing
-
-Contributions are welcome.  
-Please submit pull requests or open issues to help improve the project.
+The APK is written to `build/app/outputs/flutter-apk/app-release.apk`. The Android
+build also compiles the Rust JNI library in `../neko` and packages the kernel
+module from the repository's release pipeline.

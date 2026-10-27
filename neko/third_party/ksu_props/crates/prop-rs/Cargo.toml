@@ -1,7 +1,0 @@
-[package]
-name = "prop-rs"
-version = "0.2.0"
-edition = "2021"
-
-[dependencies]
-prost = "0.14"
